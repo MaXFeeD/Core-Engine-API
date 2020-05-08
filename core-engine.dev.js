@@ -1,5 +1,5 @@
-var CORE_ENGINE_VERSION = "2.0";
-var CORE_ENGINE_API_LEVEL = 10;
+var CORE_ENGINE_VERSION = "2.1";
+var CORE_ENGINE_API_LEVEL = 11;
 var CORE_ENGINE_CONFIG_LOCK = 4;
 
 function getMcContext() {
@@ -126,15 +126,12 @@ FileTools.GetListOfFiles = function(path, ext) {
     var dir = new java.io.File(this.getFullPath(path));
     var list = [];
     var files = dir.listFiles();
-    if (!files) {
-        return list;
-    }
+    if (!files) return list;
     for (var i = 0; i < files.length; i++) {
         var file = files[i];
-        if (!file.isDirectory()) {
+        if (!file.isDirectory())
             if (!ext || file.getName().endsWith(ext))
                 list.push(file);
-        }
     }
     return list;
 };
@@ -178,10 +175,7 @@ FileTools.mkworkdirs();
 
 
 
-var Threading = {
-	threads: []
-};
-
+var Threading = {};
 Threading.formatFatalErrorMessage = function(error, name, priority, formatFunc) {
     var paragraf = "Fatal error detected in thread " + name + ", all mods on this thread shutted down. Exit world safely and restart.\n\nКритическая ошибка в потоке " + name + ", все моды в этом потоке отключены. Для безопасного выхода сохраните мир и перезапуститесь.\n\n";
     paragraf += "CRASH INFO:\n";
@@ -197,6 +191,8 @@ Threading.formatFatalErrorMessage = function(error, name, priority, formatFunc) 
     var log = Logger.getFormattedLog();
     return paragraf + "\n\nLOG:\n" + log;
 };
+
+Threading.threads = [];
 Threading.initThread = function(name, func, priority, isErrorFatal, formatFunc) {
     var thread = new java.lang.Thread(function() {
         try {
@@ -777,75 +773,23 @@ Callback.addCallback("ProjectileHit", function(projectile, item, target) {
 
 
 
-// TODO: probably some dead code, remove it later
 var WorldGeneration = {};
+WorldGeneration.generatorUpdatable = null;
 WorldGeneration.checkTile = function(x, z) {
     var checkData = Level.getData(x, 0, z);
-	print("Checking tile!");
     if (checkData != 8) {
         var checkTile = Level.getTile(x, 0, z);
         return checkTile != 0;
     }
 };
 WorldGeneration.execGeneration = function(chunk, dimension, underground) {
-    (function() {
-        if (dimension == 1) Callback.invokeCallback("GenerateNetherChunk", chunk.x, chunk.z);
-        else if (dimension == 2) Callback.invokeCallback("GenerateEndChunk", chunk.x, chunk.z);
-		else if (underground) Callback.invokeCallback("GenerateChunkUnderground", chunk.x, chunk.z);
-		else Callback.invokeCallback("GenerateChunk", chunk.x, chunk.z);
-        if (underground) Level.setTile(chunk.x * 16 + 1, 0, chunk.z * 16 + 1, 7, 8);
-        else Level.setTile(chunk.x * 16, 0, chunk.z * 16, 7, 8);
-    })();
-	print("Hello, generation is executed!");
+	logDeprecation("WorldGeneration.execGeneration");
 };
-
-WorldGeneration.generatorUpdatable = null;
 WorldGeneration.processChunk = function(chunk, origin, dimension) {
-    var radius = Math.max(Math.abs(chunk.x - origin.x), Math.abs(chunk.z - origin.z));
-    if (radius <= this.generatorUpdatable.surface_radius)
-        if (WorldGeneration.checkTile(chunk.x * 16, chunk.z * 16))
-            WorldGeneration.execGeneration(chunk, dimension, false);
-    if (radius <= this.generatorUpdatable.underground_radius && dimension == 0 && getPlayerY() < 64)
-        if (WorldGeneration.checkTile(chunk.x * 16 + 1, chunk.z * 16 + 1))
-            WorldGeneration.execGeneration(chunk, dimension, true);
-	print("Hello, generation is processed!");
+    logDeprecation("WorldGeneration.processChunk");
 };
-
 WorldGeneration.resetEngine = function() {
-    if (this.generatorUpdatable)
-        this.generatorUpdatable.remove = true;
-    this.generatorUpdatable = {
-		age: 0,
-		delay: 3,
-		surface_radius: 3,
-		underground_radius: 1,
-		thread_optimization: false,
-		generation_priority: 0,
-		ticking_priority: 0,
-		debug: false,
-		debug_max_time: 0,
-		update: function() {
-			if (this.age++ % this.delay > 0) return;
-			var radius = Math.max(this.surface_radius, this.underground_radius);
-			var width = radius * 2 + 1;
-			var step = (this.age / this.delay) % (width * width);
-			var chunk = { x: parseInt(step % width) - radius, z: parseInt(step / width) - radius };
-			var origin = { x: Math.floor(getPlayerX() / 16 + 0.5), z: Math.floor(getPlayerZ() / 16 + 0.5) };
-			(chunk.x += origin.x, chunk.z += origin.z);
-			var dimension = Player.getDimension();
-			if (this.debug) {
-				var timeStart = CoreAPI.Debug.sysTime();
-				WorldGeneration.processChunk(chunk, origin, dimension);
-				var timeEnd = CoreAPI.Debug.sysTime();
-				var time = (timeEnd - timeStart) / 1000;
-				if (time > this.debug_max_time) {
-					this.debug_max_time = time;
-					Logger.Log("Chunk Generation Took " + time + "s", "DEBUG");
-				}
-			} else WorldGeneration.processChunk(chunk, origin, dimension);
-			print("Hello, generation is updated!");
-		}
-	};
+	logDeprecation("WorldGeneration.resetEngine");
 };
 
 
@@ -1452,7 +1396,7 @@ ItemRegistry.createArmorItem = function(namedID, name, texture, params) {
     var armorType;
     if (validArmorTypes[params.type])
         armorType = validArmorTypes[params.type].id;
-    0else {
+    else {
         Logger.Log("Invalid armor type for item " + namedID + ": " + params.type + ",use: \"helmet\", \"chestplate\", \"leggings\", \"boots\"", "ERROR");
         return;
     }
@@ -1550,7 +1494,7 @@ ItemRegistry.setLiquidClip = function(id, enabled) {
     this.getItemById(id).setLiquidClip(enabled);
 };
 ItemRegistry.setStackedByData = function(id, enabled) {
-	// logDeprecation("ItemRegistry.setStackedByData");
+	logDeprecation("ItemRegistry.setStackedByData");
 };
 ItemRegistry.setProperties = function(id, props) {
     this.getItemById(id).setProperties(props);
@@ -3118,7 +3062,7 @@ WorldAPI.__inworld.playSoundAtEntity = function(entity, name, volume, pitch) {
 };
 
 WorldAPI.__inmenu = {};
-/* WorldAPI.__inmenu.nativeSetBlock = function(x, y, z, id, data) {};
+WorldAPI.__inmenu.nativeSetBlock = function(x, y, z, id, data) {};
 WorldAPI.__inmenu.nativeGetBlockID = function(x, y, z) {
     return 0;
 };
@@ -3207,7 +3151,7 @@ WorldAPI.__inmenu.canSeeSky = function(x, y, z) {
     return false;
 };
 WorldAPI.__inmenu.playSound = function(x, y, z, name, volume, pitch) {};
-WorldAPI.__inmenu.playSoundAtEntity = function(entity, name, volume, pitch) {}; */
+WorldAPI.__inmenu.playSoundAtEntity = function(entity, name, volume, pitch) {};
 
 WorldAPI.setLoaded(false);
 Callback.addCallback("LevelSelected", function() {
@@ -3392,14 +3336,7 @@ function RenderAPI(params) {
             this.getPart("rightArm").clear();
             this.getPart("leftLeg").clear();
             this.getPart("rightLeg").clear();
-        } else {
-            this.getPart("head");
-            this.getPart("body");
-            this.getPart("leftArm");
-            this.getPart("rightArm");
-            this.getPart("leftLeg");
-            this.getPart("rightLeg");
-        } 
+        }
         this.getPart("headwear").clear(); // backcomp
     };
     this.checkChangeable = function() {
@@ -3525,7 +3462,6 @@ function ModelAPI(parentModel) {
     };
     this.setTexture = function(textureObj) {
         this.texture = textureObj || ce_missing_entity_texture;
-		this.applyTextureResolution();
         return this;
     };
     this.getTextureObj = function() {
@@ -3555,7 +3491,6 @@ function ModelAPI(parentModel) {
                 last = render;
             } else this.animator.addFrame(last);
         }
-		this.applyTextureResolution();
         this.isAnimated = true;
         return this;
     };
@@ -3586,6 +3521,7 @@ var ce_empty_entity_model = new ModelAPI().setRender(BASIC_NULL_RENDER);
 var ce_missing_entity_model = new ModelAPI();
 
 
+
 function ModelWatcher(entity, model) {
     this._texture = null;
     this._render = null;
@@ -3610,7 +3546,6 @@ function ModelWatcher(entity, model) {
         this.remove = true;
     };
 }
-
 
 
 function EntityAI(customPrototype) {
@@ -3702,12 +3637,8 @@ var EntityAIIdle = new EntityAI({
 });
 
 function __normalizeAngle(x) {
-    while (x > Math.PI * 2) {
-        x -= Math.PI * 2;
-    }
-    while (x < 0) {
-        x += Math.PI * 2;
-    }
+    while (x > Math.PI * 2) x -= Math.PI * 2;
+    while (x < 0) x += Math.PI * 2;
     return x;
 }
 
@@ -3718,10 +3649,8 @@ function __targetValue(x, val, speed) {
 function __targetAngle(angle, target, speed) {
     angle = __normalizeAngle(angle);
     target = __normalizeAngle(target);
-    if (target - Math.PI > angle)
-        target -= Math.PI * 2;
-    if (angle - Math.PI > target)
-        target += Math.PI * 2;
+    if (target - Math.PI > angle) target -= Math.PI * 2;
+    if (angle - Math.PI > target) target += Math.PI * 2;
     return __targetValue(angle, target, speed);
 }
 
@@ -5147,11 +5076,11 @@ EntityAPI.putExtra = function(ent, name, extra) {
 	logDeprecation("Entity.putExtra");
 };
 EntityAPI.getExtraJson = function(ent, name) {
-	// logDeprecation("Entity.getExtraJson");
-	// return {};
+	logDeprecation("Entity.getExtraJson");
+	return {};
 };
 EntityAPI.putExtraJson = function(ent, name, obj) {
-	// logDeprecation("Entity.putExtraJson");
+	logDeprecation("Entity.putExtraJson");
 };
 EntityAPI.addEffect = function(ent, effectId, effectData, effectTime, ambiance, particles) {
     Entity.addEffect(ent, effectId, effectData, effectTime, ambiance, particles);
@@ -5280,7 +5209,7 @@ EntityAPI.setFire = function(ent, fire, force) {
 };
 
 EntityAPI.health = function(entity) {
-    /* return {
+    return {
 		get: function() {
 			return EntityAPI.getHealth(entity);
 		},
@@ -5293,7 +5222,7 @@ EntityAPI.health = function(entity) {
 		setMax: function(health) {
 			EntityAPI.setMaxHealth(entity, health);
 		}
-	}; */
+	};
 };
 EntityAPI.getHealth = function(ent) {
     return Entity.getHealth(ent);
@@ -5983,7 +5912,7 @@ CoreAPI.IDData.block = CoreAPI.BlockID = BlockID;
 CoreAPI.Block = BlockRegistry;
 CoreAPI.Item = ItemRegistry;
 CoreAPI.Armor = ArmorRegistry;
-/* CoreAPI.Liquid = */ CoreAPI.LiquidRegistry = LiquidRegistry;
+CoreAPI.Liquid = CoreAPI.LiquidRegistry = LiquidRegistry;
 CoreAPI.BlockRenderer = BlockRenderer;
 CoreAPI.ICRender = ICRender;
 CoreAPI.Recipes = Recipes;
@@ -5993,7 +5922,7 @@ CoreAPI.Native = {};
 CoreAPI.Native.ArmorType = ArmorType;
 CoreAPI.Native.ItemCategory = ItemCategory;
 CoreAPI.Native.ParticleType = ParticleType;
-/* CoreAPI.Native.ChatColor = */ CoreAPI.Native.Color = ChatColor;
+CoreAPI.Native.ChatColor = CoreAPI.Native.Color = ChatColor;
 CoreAPI.Native.EntityType = EntityType;
 CoreAPI.Native.MobRenderType = EntityRenderType;
 CoreAPI.Native.PotionEffect = MobEffect;
@@ -6006,7 +5935,7 @@ CoreAPI.Native.BlockRenderLayer = BlockRenderLayer;
 CoreAPI.Native.GameMode = GameMode;
 CoreAPI.Native.GameDifficulty = GameDifficulty;
 
-CoreAPI.alert /* = CoreAPI.print */ = print;
+CoreAPI.alert = CoreAPI.print = print;
 
 function ResetInGameAPIs() {
     TileEntity.resetEngine();
