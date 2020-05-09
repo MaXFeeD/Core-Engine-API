@@ -9,9 +9,11 @@ function getMcContext() {
 function getPlayerX() {
     return Player.getX();
 }
+
 function getPlayerY() {
     return Player.getY();
 }
+
 function getPlayerZ() {
     return Player.getZ();
 }
@@ -39,9 +41,19 @@ GuiUtils.Run = function(func) {
 
 
 
+/*
+_______              _______________                       
+___    |___  _____  ____(_)__  /__(_)_____ ____________  __
+__  /| |  / / /_  |/_/_  /__  /__  /_  __ `/_  ___/_  / / /
+_  ___ / /_/ /__>  < _  / _  / _  / / /_/ /_  /   _  /_/ / 
+/_/  |_\__,_/ /_/|_| /_/  /_/  /_/  \__,_/ /_/    _\__, /  
+                                                  /____/   
+*/
+
 var FileTools = {
 	mntdir: "/mnt",
-	root: android.os.Environment.getExternalStorageDirectory().getAbsolutePath() + "/",
+	root: android.os.Environment.getExternalStorageDirectory()
+	                                .getAbsolutePath() + "/",
 	moddir: __packdir__ + "innercore/mods/"
 };
 
@@ -65,14 +77,15 @@ FileTools.isExists = function(path) {
 
 FileTools.WriteText = function(file, text, add) {
 	var dir = this.getFullPath(file);
-	var writer = new java.io.PrintWriter(new java.io.BufferedWriter(new java.io.FileWriter(dir, add || false)));
+	var writer = new java.io.PrintWriter(new java.io.BufferedWriter
+	                    (new java.io.FileWriter(dir, add || false)));
 	writer.write(text);
 	writer.close();
 };
 FileTools.ReadText = function(file) {
 	var dir = this.getFullPath(file);
 	try {
-		var reader = java.io.BufferedReader(new java.io.FileReader(dir));
+		var reader = new java.io.BufferedReader(new java.io.FileReader(dir));
 		var str;
         var text = "";
         while (str = reader.readLine())
@@ -86,7 +99,6 @@ FileTools.WriteImage = function(file, bitmap) {
     var output = new java.io.FileOutputStream(this.getFullPath(file));
     bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, output);
 };
-
 FileTools.ReadImage = function(file) {
     var options = new android.graphics.BitmapFactory.Options();
     options.inScaled = false;
@@ -173,8 +185,6 @@ FileTools.WriteJSON = function(dir, obj, beautify) {
 
 FileTools.mkworkdirs();
 
-
-
 var Threading = {};
 Threading.formatFatalErrorMessage = function(error, name, priority, formatFunc) {
     var paragraf = "Fatal error detected in thread " + name + ", all mods on this thread shutted down. Exit world safely and restart.\n\nКритическая ошибка в потоке " + name + ", все моды в этом потоке отключены. Для безопасного выхода сохраните мир и перезапуститесь.\n\n";
@@ -219,6 +229,15 @@ Threading.getThread = function(name) {
 };
 
 
+
+/*
+__________                        _____       ______ ______     
+___  ____/___  ________________  ___  /______ ___  /____  /____ 
+__  __/  __  |/_/  _ \  ___/  / / /  __/  __ `/_  __ \_  /_  _ \
+_  /___  __>  < /  __/ /__ / /_/ // /_ / /_/ /_  /_/ /  / /  __/
+/_____/  /_/|_| \___/\___/ \__,_/ \__/ \__,_/ /_.___//_/  \___/ 
+                                                                
+*/
 
 var ModAPI = {};
 ModAPI.modAPIs = {};
@@ -304,7 +323,7 @@ ModAPI.cloneObject = function(source, deep, rec) {
         Logger.Log("object clone failed: stackoverflow at " + source, "WARNING");
         return source;
     }
-    if (source + "" == "undefined") return undefined;
+    if (source == undefined) return undefined;
     if (source == null) return null;
     var cloned = {};
     for (var name in source) {
@@ -318,7 +337,7 @@ ModAPI.cloneObject = function(source, deep, rec) {
 ModAPI.debugCloneObject = function(source, deep, rec) {
     if (!rec) rec = 0;
     if (rec > 5) return "stackoverflow";
-    if (source + "" == "undefined") return undefined;
+    if (source == undefined) return undefined;
     if (source == null) return null;
     var cloned = {};
     for (var name in source) {
@@ -329,8 +348,6 @@ ModAPI.debugCloneObject = function(source, deep, rec) {
     }
     return cloned;
 };
-
-
 
 var SaverAPI = {};
 SaverAPI.addSavesScope = function(name, loadFunc, saveFunc) {
@@ -351,63 +368,14 @@ SaverAPI.setObjectIgnored = function(obj, ignore) {
 
 
 
-var GameAPI = {};
-GameAPI.spendItemsInCreative = false;
-GameAPI.isDeveloperMode = false;
-GameAPI.prevent = function() {
-    preventDefault();
-};
-GameAPI.isActionPrevented = function() {
-    return MCSystem.isDefaultPrevented(); 
-};
-
-GameAPI.message = function(msg) {
-    clientMessage(msg + "");
-};
-GameAPI.tipMessage = function(msg) {
-    tipMessage(msg + "");
-};
-GameAPI.dialogMessage = function(message, title) {
-    GuiUtils.Run(function() {
-        var ctx = getMcContext();
-        var builder = android.app.AlertDialog.Builder(ctx);
-        if (title) builder.setTitle(title + "");
-        if (message) {
-            message += "";
-            message = message.split("\n").join("<br>");
-            builder.setMessage(android.text.Html.fromHtml(message));
-        }
-        builder.show();
-    });
-};
-
-GameAPI.setDifficulty = function(difficulty) {
-    Level.setDifficulty(difficulty);
-};
-GameAPI.getDifficulty = function() {
-    return Level.getDifficulty();
-};
-GameAPI.setGameMode = function(gameMode) {
-    Level.setGameMode(gameMode);
-};
-GameAPI.getGameMode = function() {
-    return Level.getGameMode();
-};
-GameAPI.getMinecraftVersion = function() {
-    return MCSystem.getMinecraftVersion();
-};
-GameAPI.getEngineVersion = function() {
-    return CORE_ENGINE_VERSION;
-};
-GameAPI.isItemSpendingAllowed = function() {
-    return this.spendItemsInCreative || this.getGameMode() != 1;
-};
-
-Callback.addCallback("CoreConfigured", function(config) {
-    GameAPI.isDeveloperMode = GameAPI.spendItemsInCreative = config.getBool("developer_mode");
-});
-
-
+/*
+_________                      _____________ ________           _____ 
+__  ____/_____ _______ __________  __ \__  /_______(_)____________  /_
+_  / __ _  __ `/_  __ `__ \  _ \  / / /_  __ \____  /_  _ \  ___/  __/
+/ /_/ / / /_/ /_  / / / / /  __/ /_/ /_  /_/ /___  / /  __/ /__ / /_  
+\____/  \__,_/ /_/ /_/ /_/\___/\____/ /_.___/___  /  \___/\___/ \__/  
+                                             /___/                    
+*/
 
 function GameObject(name, Prototype) {
     this.originalName = this.gameobjectName = name;
@@ -443,7 +411,6 @@ function GameObject(name, Prototype) {
         }
     };
 }
-
 
 var GameObjectRegistry = {};
 GameObjectRegistry.gameObjectTypes = {};
@@ -539,6 +506,15 @@ GameObjectRegistry.callForTypeSafe = function() {
 
 
 
+/*
+__________________    __________      _______________         
+___  __/__(_)__  /_______  ____/________  /___(_)_  /_____  __
+__  /  __  /__  /_  _ \_  __/  __  __ \  __/_  /_  __/_  / / /
+_  /   _  / _  / /  __/  /___  _  / / / /_ _  / / /_ _  /_/ / 
+/_/    /_/  /_/  \___//_____/  /_/ /_/\__/ /_/  \__/ _\__, /  
+                                                     /____/   
+*/
+
 var TileEntityBasePrototype = {};
 TileEntityBasePrototype.remove = false;
 TileEntityBasePrototype.isLoaded = false;
@@ -587,7 +563,6 @@ TileEntityBasePrototype.selfDestroy = function() {
     TileEntity.destroyTileEntity(this);
 };
 TileEntityBasePrototype.requireMoreLiquid = function(liquid, amount) {};
-
 
 var TILE_ENTITY_CHECKER_ITERATIONS = 10;
 
@@ -773,6 +748,15 @@ Callback.addCallback("ProjectileHit", function(projectile, item, target) {
 
 
 
+/*
+_________                              __________              
+__  ____/_____________________________ __  /___(_)____________ 
+_  / __ _  _ \_  __ \  _ \_  ___/  __ `/  __/_  /_  __ \_  __ \
+/ /_/ / /  __/  / / /  __/  /   / /_/ // /_ _  / / /_/ /  / / /
+\____/  \___//_/ /_/\___//_/    \__,_/ \__/ /_/  \____//_/ /_/ 
+                                                               
+*/
+
 var WorldGeneration = {};
 WorldGeneration.generatorUpdatable = null;
 WorldGeneration.checkTile = function(x, z) {
@@ -836,7 +820,7 @@ WorldGenerationUtils.lockInBlock = function(id, data, checkerTile, checkerMode) 
     this.__lockedReal = { id: id, data: data };
     var id = this.__lockedReal.id;
     var data = this.__lockedReal.data;
-    if (checkerTile + "" == "undefined")
+    if (checkerTile == undefined)
         this.setLockedBlock = function(x, y, z) {
             setTile(x, y, z, id, data);
         };
@@ -872,6 +856,15 @@ WorldGenerationUtils.generateOreCustom = function(x, y, z, id, data, amount, whi
 };
 
 
+
+/*
+______________           ______         
+___  __ )__  /______________  /_________
+__  __  |_  /_  __ \  ___/_  //_/_  ___/
+_  /_/ /_  / / /_/ / /__ _  ,<  _(__  ) 
+/_____/ /_/  \____/\___/ /_/|_| /____/  
+                                        
+*/
 
 var BLOCK_BASE_PROTOTYPE = {
 	__validBlockTypes: {
@@ -959,7 +952,6 @@ BLOCK_BASE_PROTOTYPE.getShape = function(item) {
 BLOCK_BASE_PROTOTYPE.getDrop = null;
 BLOCK_BASE_PROTOTYPE.onPlaced = null;
 BLOCK_BASE_PROTOTYPE.onItemUsed = null;
-
 
 var BlockRegistry = {
 	TYPE_BASE: "createBlock",
@@ -1203,6 +1195,15 @@ Callback.addCallback("PopBlockResources", function(coords, block, i, f) {
 
 
 
+/*
+____________                        
+____  _/_  /____________ ___________
+ __  / _  __/  _ \_  __ `__ \_  ___/
+__/ /  / /_ /  __/  / / / / /(__  ) 
+/___/  \__/ \___//_/ /_/ /_//____/  
+                                    
+*/
+
 var ITEM_BASE_PROTOTYPE = {
 	__validItemTypes: {
 		createItem: true,
@@ -1327,7 +1328,6 @@ ITEM_BASE_PROTOTYPE.getArmorFuncs = function() {
 ITEM_BASE_PROTOTYPE.onUsed = function(coords, item, block) {};
 ITEM_BASE_PROTOTYPE.onTick = function(item) {};
 ITEM_BASE_PROTOTYPE.onThrowableImpact = function(projectile, item, target) {};
-
 
 var ItemRegistry = {
 	TYPE_BASE: "createItem",
@@ -1649,6 +1649,16 @@ Callback.addCallback("ItemDispensed", function(coords, item) {
 });
 
 
+
+/*
+________           ______       
+___  __/______________  /_______
+__  /  _  __ \  __ \_  /__  ___/
+_  /   / /_/ / /_/ /  / _(__  ) 
+/_/    \____/\____//_/  /____/  
+                                
+*/
+
 var ArmorRegistry = {};
 ArmorRegistry.registerFuncs = function(id, funcs) {
     var id = ItemRegistry.getNumericId(id);
@@ -1910,7 +1920,16 @@ Callback.addCallback("PostLoaded", function() {
     ToolAPI.resetEngine();
 });
 
-/* register native MCPE items, blocks and materials in ToolAPI */
+
+
+/*
+________             _____       _____             
+___  __ \___________ ___(_)________  /_____________
+__  /_/ /  _ \_  __ `/_  /__  ___/  __/  _ \_  ___/
+_  _, _//  __/  /_/ /_  / _(__  )/ /_ /  __/  /    
+/_/ |_| \___/_\__, / /_/  /____/ \__/ \___//_/     
+             /____/                                
+*/
 
 /* --------------- tool materials ---------------- */
 ToolAPI.addToolMaterial("wood", {
@@ -2591,12 +2610,11 @@ BlockRegistry.registerDropFunctionForID(469, function(coords, id, data, level) {
 	return [];
 }, 1);
 
-// ice
 Callback.addCallback("DestroyBlock", function(coords, block, player) {
-	if (block.id == 79) {
+	if (block.id == 79) { // ice
 		var item = Player.getCarriedItem();
 		var enchant = ToolAPI.getEnchantExtraData(item.extra);
-		var toolData = ToolAPI.getToolData(item.id);
+		var toolData = ToolAPI.getToolData(item.id) || {};
 		if (!toolData.isNative && GameAPI.isItemSpendingAllowed()) {
 			if (toolData && toolData.modifyEnchant) toolData.modifyEnchant(enchant, item);
 			if (ToolAPI.getToolLevelViaBlock(item.id, block.id) > 0 && enchant.silk) {
@@ -2608,6 +2626,15 @@ Callback.addCallback("DestroyBlock", function(coords, block, player) {
 });
 
 
+
+/*
+___________              ______________       
+___  /___(_)_____ ____  ____(_)_____  /_______
+__  / __  /_  __ `/  / / /_  /_  __  /__  ___/
+_  /___  / / /_/ // /_/ /_  / / /_/ / _(__  ) 
+/_____/_/  \__, / \__,_/ /_/  \__,_/  /____/  
+             /_/                              
+*/
 
 var LiquidRegistry = {};
 LiquidRegistry.liquidStorageSaverId = Saver.registerObjectSaver("_liquidStorage", {
@@ -2732,7 +2759,7 @@ LiquidRegistry.Storage = function(tileEntity) {
         return this.tileEntity;
     };
     this.hasDataFor = function(liquid) {
-        return this.liquidAmounts[liquid] + "" != "undefined";
+        return this.liquidAmounts[liquid] != undefined;
     };
     this.setLimit = function(liquid, limit) {
         if (liquid) this.liquidLimits[liquid] = limit;
@@ -2834,6 +2861,71 @@ LiquidRegistry.registerItem("milk", { id: 325, data: 0 }, { id: 325, data: 1 });
 
 
 
+/*
+___       __            ______________
+__ |     / /_______________  /_____  /
+__ | /| / /_  __ \_  ___/_  /_  __  / 
+__ |/ |/ / / /_/ /  /   _  / / /_/ /  
+____/|__/  \____//_/    /_/  \__,_/   
+                                      
+*/
+
+var GameAPI = {};
+GameAPI.spendItemsInCreative = false;
+GameAPI.isDeveloperMode = false;
+GameAPI.prevent = function() {
+    preventDefault();
+};
+GameAPI.isActionPrevented = function() {
+    return MCSystem.isDefaultPrevented(); 
+};
+
+GameAPI.message = function(msg) {
+    clientMessage(msg + "");
+};
+GameAPI.tipMessage = function(msg) {
+    tipMessage(msg + "");
+};
+GameAPI.dialogMessage = function(message, title) {
+    GuiUtils.Run(function() {
+        var ctx = getMcContext();
+        var builder = android.app.AlertDialog.Builder(ctx);
+        if (title) builder.setTitle(title + "");
+        if (message) {
+            message += "";
+            message = message.split("\n").join("<br>");
+            builder.setMessage(android.text.Html.fromHtml(message));
+        }
+        builder.show();
+    });
+};
+
+GameAPI.setDifficulty = function(difficulty) {
+    Level.setDifficulty(difficulty);
+};
+GameAPI.getDifficulty = function() {
+    return Level.getDifficulty();
+};
+GameAPI.setGameMode = function(gameMode) {
+    Level.setGameMode(gameMode);
+};
+GameAPI.getGameMode = function() {
+    return Level.getGameMode();
+};
+GameAPI.getMinecraftVersion = function() {
+    return MCSystem.getMinecraftVersion();
+};
+GameAPI.getEngineVersion = function() {
+    return CORE_ENGINE_VERSION;
+};
+GameAPI.isItemSpendingAllowed = function() {
+    return this.spendItemsInCreative || this.getGameMode() != 1;
+};
+
+Callback.addCallback("CoreConfigured", function(config) {
+    GameAPI.isDeveloperMode = GameAPI.spendItemsInCreative = config.getBool("developer_mode");
+});
+
 var NativeAPI_setTile = requireMethodFromNativeAPI("api.NativeAPI", "setTile");
 var NativeAPI_getTileAndData = requireMethodFromNativeAPI("api.NativeAPI", "getTileAndData");
 var NativeAPI_getTile = requireMethodFromNativeAPI("api.NativeAPI", "getTile");
@@ -2843,15 +2935,10 @@ var WorldAPI = {};
 WorldAPI.isLoaded = false;
 WorldAPI.setLoaded = function(isLoaded) {
     this.isLoaded = isLoaded;
-    var mode = null;
-    if (this.isLoaded) {
-        mode = this.__inworld;
-        Logger.Log("World API switched into in-game mode", "API");
-    } else {
-        mode = this.__inmenu;
-        Logger.Log("World API switched into in-menu mode", "API");
-    }
-    for (var name in mode) this[name] = mode[name];
+	Logger.Log("World API switched into in-" + (this.isLoaded
+	                    ? "game" : "menu") + " mode", "API");
+	var mode = isLoaded ? "__inworld" : "__inmenu";
+	for (var i in this[mode]) this[i] = this[mode][i];
 };
 WorldAPI.isWorldLoaded = function() {
     return this.isLoaded;
@@ -2921,237 +3008,170 @@ WorldAPI.addGenerationCallback = function(targetCallback, callback, uniqueHashSt
     });
 };
 
-WorldAPI.__inworld = {};
-WorldAPI.__inworld.nativeSetBlock = function(x, y, z, id, data) {
-    NativeAPI_setTile(x, y, z, id, data);
+WorldAPI.nativeSetBlock = function(x, y, z, id, data) {
+	this.isLoaded && NativeAPI_setTile(x, y, z, id, data);
 };
-WorldAPI.__inworld.nativeGetBlockID = function(x, y, z) {
-    return NativeAPI_getTile(x, y, z);
+WorldAPI.nativeGetBlockID = function(x, y, z) {
+    return this.isLoaded ? NativeAPI_getTile(x, y, z) : 0;
 };
-WorldAPI.__inworld.nativeGetBlockData = function(x, y, z) {
-    return NativeAPI_getData(x, y, z);
+WorldAPI.nativeGetBlockData = function(x, y, z) {
+    return this.isLoaded ? NativeAPI_getData(x, y, z) : 0;
 };
-WorldAPI.__inworld.setBlock = NativeAPI_setTile;
-WorldAPI.__inworld.setFullBlock = function(x, y, z, fullTile) {
-    NativeAPI_setTile(x, y, z, fullTile.id, fullTile.data);
+WorldAPI.setFullBlock = function(x, y, z, fullTile) {
+    this.isLoaded && NativeAPI_setTile(x, y, z, fullTile.id, fullTile.data);
 };
-WorldAPI.__inworld.getBlock = function(x, y, z) {
-    var tile = NativeAPI_getTileAndData(x, y, z);
-    return {
+WorldAPI.getBlock = function(x, y, z) {
+	if (!this.isLoaded) return { id: 0, data: 0 };
+	var tile = NativeAPI_getTileAndData(x, y, z);
+	return {
 		id: ((tile >> 24 == 1) ? -1 : 1) * (tile & 0xFFFF),
 		data: ((tile >> 16) & 0xFF)
 	};
 };
-WorldAPI.__inworld.getBlockID = NativeAPI_getTile;
-WorldAPI.__inworld.getBlockData = NativeAPI_getData;
-WorldAPI.__inworld.destroyBlock = function(x, y, z, drop) {
-    var tile = this.getBlock(x, y, z);
-    if (drop) BlockRegistry.onBlockDestroyed({ x: x, y: y, z: z }, tile, false);
-    Level.destroyBlock(x, y, z, drop);
+WorldAPI.destroyBlock = function(x, y, z, drop) {
+	if (this.isLoaded) {
+		var tile = this.getBlock(x, y, z);
+		if (drop) BlockRegistry.onBlockDestroyed(
+		    { x: x, y: y, z: z }, tile, false);
+		Level.destroyBlock(x, y, z, drop);
+	}
 };
-WorldAPI.__inworld.getLightLevel = requireMethodFromNativeAPI("api.NativeAPI", "getBrightness");
-WorldAPI.__inworld.isChunkLoaded = function(x, z) {
-    return Level.isChunkLoaded(x, z);
+WorldAPI.isChunkLoaded = function(x, z) {
+    return this.isLoaded ? Level.isChunkLoaded(x, z) : false;
 };
-WorldAPI.__inworld.isChunkLoadedAt = function(x, y, z) {
-    return Level.isChunkLoadedAt(x, y, z);
+WorldAPI.isChunkLoadedAt = function(x, y, z) {
+    return this.isLoaded ? Level.isChunkLoadedAt(x, y, z) : false;
 };
-WorldAPI.__inworld.getChunkState = function(x, z) {
-    return Level.getChunkState(x, z);
+WorldAPI.getChunkState = function(x, z) {
+    return this.isLoaded ? Level.getChunkState(x, z) : 0;
 };
-WorldAPI.__inworld.getChunkStateAt = function(x, y, z) {
-    return Level.getChunkStateAt(x, y, z);
+WorldAPI.getChunkStateAt = function(x, y, z) {
+    return this.isLoaded ? Level.getChunkStateAt(x, y, z) : 0;
 };
-WorldAPI.__inworld.getTileEntity = function(x, y, z) {
-    return TileEntity.getTileEntity(x, y, z);
+WorldAPI.getTileEntity = function(x, y, z) {
+    return this.isLoaded ? TileEntity.getTileEntity(x, y, z) : null;
 };
-WorldAPI.__inworld.addTileEntity = function(x, y, z) {
-    return TileEntity.addTileEntity(x, y, z);
+WorldAPI.addTileEntity = function(x, y, z) {
+    return this.isLoaded ? TileEntity.addTileEntity(x, y, z) : null;
 };
-WorldAPI.__inworld.removeTileEntity = function(x, y, z) {
-    return TileEntity.destroyTileEntityAtCoords(x, y, z);
+WorldAPI.removeTileEntity = function(x, y, z) {
+    return this.isLoaded ? TileEntity.destroyTileEntityAtCoords(x, y, z) : null;
 };
-WorldAPI.__inworld.getContainer = function(x, y, z) {
-    var nativeTileEntity = Level.getTileEntity(x, y, z);
-    if (nativeTileEntity) return nativeTileEntity;
-    var id = NativeAPI_getTile(x, y, z);
-    if (TileEntity.isTileEntityBlock(id)) {
-        var tileEntity = this.getTileEntity(x, y, z);
-        if (tileEntity && tileEntity.container)
-            return tileEntity.container;
-    }
-    return null;
+WorldAPI.getContainer = function(x, y, z) {
+	if (!this.isLoaded) return null;
+	var nativeTileEntity = Level.getTileEntity(x, y, z);
+	if (nativeTileEntity) return nativeTileEntity;
+	var id = NativeAPI_getTile(x, y, z);
+	if (TileEntity.isTileEntityBlock(id)) {
+		var tileEntity = this.getTileEntity(x, y, z);
+		if (tileEntity && tileEntity.container)
+			return tileEntity.container;
+	}
+	return null;
 };
-WorldAPI.__inworld.getWorldTime = function() {
-    return Level.getTime();
+WorldAPI.getWorldTime = function() {
+    return this.isLoaded ? Level.getTime() : 0;
 };
-WorldAPI.__inworld.setWorldTime = function(time) {
-    return Level.setTime(time || 0);
+WorldAPI.setWorldTime = function(time) {
+    this.isLoaded && Level.setTime(time || 0);
 };
-WorldAPI.__inworld.setDayMode = function(day) {
-    this.setNightMode(!day);
+WorldAPI.setDayMode = function(day) {
+	return this.isLoaded ? this.setNightMode(!day) : false;
 };
-WorldAPI.__inworld.setNightMode = function(night) {
-    Level.setNightMode(night);
+WorldAPI.setNightMode = function(night) {
+	return this.isLoaded ? Level.setNightMode(night) : false;
 };
-WorldAPI.__inworld.getWeather = function() {
-    return {
+WorldAPI.getWeather = function() {
+    return this.isLoaded ? {
 		rain: Level.getRainLevel(),
 		thunder: Level.getLightningLevel()
-	};
+	} : { rain: 0, thunder: 0 };
 };
-WorldAPI.__inworld.setWeather = function(weather) {
-    if (weather) Level.setRainLevel(weather.rain || 0), Level.setLightningLevel(weather.thunder || 0);
+WorldAPI.setWeather = function(weather) {
+    if (weather && this.isLoaded) {
+		Level.setRainLevel(weather.rain || 0);
+		Level.setLightningLevel(weather.thunder || 0);
+	}
 };
-WorldAPI.__inworld.drop = function(x, y, z, id, count, data, extra) {
-    return Level.dropItem(x, y, z, 0, id, count, data, extra);
+WorldAPI.drop = function(x, y, z, id, count, data, extra) {
+    return this.isLoaded ? Level.dropItem(x, y, z, 0, id, count, data, extra) : null;
 };
-WorldAPI.__inworld.explode = function(x, y, z, power, someBoolean) {
-    explode(x, y, z, power, someBoolean);
+WorldAPI.explode = function(x, y, z, power, someBoolean) {
+	this.isLoaded && explode(x, y, z, power, someBoolean);
 };
-WorldAPI.__inworld.setBiomeMap = function(x, z, biome) {
-    Level.setBiomeMap(x, z, biome);
+WorldAPI.setBiomeMap = function(x, z, biome) {
+	this.isLoaded && Level.setBiomeMap(x, z, biome);
 };
-WorldAPI.__inworld.getBiomeMap = function(x, z) {
-    return Level.getBiomeMap(x, z);
+WorldAPI.getBiomeMap = function(x, z) {
+    return this.isLoaded ? Level.getBiomeMap(x, z) : 0;
 };
-WorldAPI.__inworld.setBiome = function(x, z, biome) {
-    Level.getBiome(x, z, biome);
+WorldAPI.setBiome = function(x, z, biome) {
+    this.isLoaded && Level.getBiome(x, z, biome);
 };
-WorldAPI.__inworld.getBiome = function(x, z) {
-    return Level.getBiome(x, z);
+WorldAPI.getBiome = function(x, z) {
+    return this.isLoaded ? Level.getBiome(x, z) : 0;
 };
-WorldAPI.__inworld.getBiomeName = function(x, z) {
+WorldAPI.getBiomeName = function(x, z) {
+	if (!this.isLoaded) return "error: level not loaded";
+	logDeprecation("World.getBiomeName");
     var biome = Level.getBiome(x, z);
     return Level.biomeIdToName(biome);
 };
-WorldAPI.__inworld.getBiomeNameById = function(biome) {
+WorldAPI.getBiomeNameById = function(biome) {
+	if (!this.isLoaded) return "error: level not loaded";
+	logDeprecation("World.getBiomeNameById");
     return Level.biomeIdToName(biome);
 };
-WorldAPI.__inworld.getTemperature = function(x, y, z) {
-    return Level.getTemperature(x, y, z);
+WorldAPI.getTemperature = function(x, y, z) {
+    return this.isLoaded ? Level.getTemperature(x, y, z) : 0;
 };
-WorldAPI.__inworld.getGrassColor = function(x, z) {
-    return Level.getGrassColor(x, z);
+WorldAPI.getGrassColor = function(x, z) {
+    return this.isLoaded ? Level.getGrassColor(x, z) : 0;
 };
-WorldAPI.__inworld.setGrassColor = function(x, z, color) {
-    return Level.setGrassColor(x, z, color || 0);
+WorldAPI.setGrassColor = function(x, z, color) {
+    return this.isLoaded ? Level.setGrassColor(x, z, color || 0) : false;
 };
-WorldAPI.__inworld.getGrassColorRGB = function(x, z) {
-    var color = Level.getGrassColor(x, z);
-    return {
+WorldAPI.getGrassColorRGB = function(x, z) {
+	if (!this.isLoaded) return { r: 0, g: 0, b: 0 };
+	var color = Level.getGrassColor(x, z);
+	return {
 		r: (color >> 16) & 255,
 		g: (color >> 8) & 255,
 		b: (color >> 0) & 255
 	};
 };
-WorldAPI.__inworld.setGrassColorRGB = function(x, z, rgb) {
+WorldAPI.setGrassColorRGB = function(x, z, rgb) {
+	if (!this.isLoaded) return false;
     var color = parseInt(rgb.r) * 256 * 256 + parseInt(rgb.g) * 256 + parseInt(rgb.b);
     return Level.setGrassColor(x, z, color);
 };
-WorldAPI.__inworld.canSeeSky = function(x, y, z) {
-    return GenerationUtils.canSeeSky(x, y, z);
+WorldAPI.canSeeSky = function(x, y, z) {
+    return this.isLoaded ? GenerationUtils.canSeeSky(x, y, z) : false;
 };
-WorldAPI.__inworld.playSound = function(x, y, z, name, volume, pitch) {
-    if (!pitch) pitch = 0.5;
-    Level.playSound(x, y, z, name, volume, pitch);
+WorldAPI.playSound = function(x, y, z, name, volume, pitch) {
+	if (this.isLoaded) {
+		if (!pitch) pitch = 0.5;
+		Level.playSound(x, y, z, name, volume, pitch);
+	}
 };
-WorldAPI.__inworld.playSoundAtEntity = function(entity, name, volume, pitch) {
-    if (!pitch) pitch = 0.5;
-    Level.playSoundEnt(entity, name, volume, pitch);
+WorldAPI.playSoundAtEntity = function(entity, name, volume, pitch) {
+	if (this.isLoaded) {
+		if (!pitch) pitch = 0.5;
+		Level.playSoundEnt(entity, name, volume, pitch);
+	}
 };
 
+WorldAPI.__inworld = {};
+WorldAPI.__inworld.setBlock = NativeAPI_setTile;
+WorldAPI.__inworld.getBlockID = NativeAPI_getTile;
+WorldAPI.__inworld.getBlockData = NativeAPI_getData;
+WorldAPI.__inworld.getLightLevel = requireMethodFromNativeAPI("api.NativeAPI", "getBrightness");
+
 WorldAPI.__inmenu = {};
-WorldAPI.__inmenu.nativeSetBlock = function(x, y, z, id, data) {};
-WorldAPI.__inmenu.nativeGetBlockID = function(x, y, z) {
-    return 0;
-};
-WorldAPI.__inmenu.nativeGetBlockData = function(x, y, z) {
-    return 0;
-};
 WorldAPI.__inmenu.setBlock = function(x, y, z, id, data) {};
-WorldAPI.__inmenu.setFullBlock = function(x, y, z, fullTile) {};
-WorldAPI.__inmenu.getBlock = function(x, y, z) {
-    return { id: 0, data: 0 };
-};
-WorldAPI.__inmenu.getBlockID = function(x, y, z) {
-	return 0;
-};
-WorldAPI.__inmenu.getBlockData = function(x, y, z) {
-	return 0;
-};
-WorldAPI.__inmenu.destroyBlock = function(x, y, z, drop) {};
-WorldAPI.__inmenu.getLightLevel = function(x, y, z) {
-	return 0;
-};
-WorldAPI.__inmenu.isChunkLoaded = function(x, z) {
-    return false;
-};
-WorldAPI.__inmenu.isChunkLoadedAt = function(x, y, z) {
-    return false;
-};
-WorldAPI.__inmenu.getChunkState = function(x, z) {
-    return 0;
-};
-WorldAPI.__inmenu.getChunkStateAt = function(x, y, z) {
-    return 0;
-};
-WorldAPI.__inmenu.getTileEntity = function(x, y, z) {
-    return null;
-};
-WorldAPI.__inmenu.addTileEntity = function(x, y, z) {
-    return null;
-};
-WorldAPI.__inmenu.removeTileEntity = function(x, y, z) {
-    return false;
-};
-WorldAPI.__inmenu.getContainer = function(x, y, z) {
-	return null;
-};
-WorldAPI.__inmenu.getWorldTime = function() {
-    return 0;
-};
-WorldAPI.__inmenu.setWorldTime = function(time) {};
-WorldAPI.__inmenu.setDayMode = function(day) {};
-WorldAPI.__inmenu.setNightMode = function(night) {};
-WorldAPI.__inmenu.getWeather = function() {
-    return { rain: 0, thunder: 0 };
-};
-WorldAPI.__inmenu.setWeather = function(weather) {};
-WorldAPI.__inmenu.drop = function(x, y, z, id, count, data, extra) {
-    return null;
-};
-WorldAPI.__inmenu.explode = function(x, y, z, power, someBoolean) {};
-WorldAPI.__inmenu.setBiomeMap = function(x, z, biome) {};
-WorldAPI.__inmenu.getBiomeMap = function(x, z) {
-    return -1;
-};
-WorldAPI.__inmenu.setBiome = function(x, z, biome) {};
-WorldAPI.__inmenu.getBiome = function(x, z) {
-    return -1;
-};
-WorldAPI.__inmenu.getBiomeName = function(x, z) {
-    return "error: level not loaded";
-};
-WorldAPI.__inmenu.getBiomeNameById = function(biome) {
-    return "error: level not loaded";
-};
-WorldAPI.__inmenu.getTemperature = function(x, y, z) {
-    return 0;
-};
-WorldAPI.__inmenu.getGrassColor = function(x, z) {
-    return 0;
-};
-WorldAPI.__inmenu.setGrassColor = function(x, z, color) {};
-WorldAPI.__inmenu.getGrassColorRGB = function(x, z) {
-    return { r: 0, g: 0, b: 0 };
-};
-WorldAPI.__inmenu.setGrassColorRGB = function(x, z, rgb) {};
-WorldAPI.__inmenu.canSeeSky = function(x, y, z) {
-    return false;
-};
-WorldAPI.__inmenu.playSound = function(x, y, z, name, volume, pitch) {};
-WorldAPI.__inmenu.playSoundAtEntity = function(entity, name, volume, pitch) {};
+WorldAPI.__inmenu.getBlockID = function(x, y, z) { return 0; };
+WorldAPI.__inmenu.getBlockData = function(x, y, z) { return 0; };
+WorldAPI.__inmenu.getLightLevel = function(x, y, z) { return 0; };
 
 WorldAPI.setLoaded(false);
 Callback.addCallback("LevelSelected", function() {
@@ -3166,1900 +3186,24 @@ Callback.addCallback("BlockChanged", function(coords, block1, block2, int1, int2
 
 
 
-var AnimatorToken = {};
-AnimatorToken.__current = 1;
-AnimatorToken.genToken = function() {
-    return this.__current++;
-};
-
-function AnimationHelper() {
-    this.animation = [];
-    this.animationDelay = 1;
-    this.animationOffsets = {0: 0};
-    this.getOffset = function(token) {
-        return this.animationOffsets[token || 0] || 0;
-    };
-    this.setOffset = function(token, offset) {
-        this.animationOffsets[token || 0] = offset;
-    };
-    this.getGlobalTime = function() {
-        return java.lang.System.currentTimeMillis() / 50;
-    };
-    this.getTime = function(token) {
-        return this.getGlobalTime() - this.getOffset(token);
-    };
-    this.resetAnimation = function(token) {
-        this.setOffset(token, this.getGlobalTime());
-    };
-    this.getFrameNumber = function(token) {
-        return parseInt(this.getTime(token) / this.animationDelay) % this.animation.length;
-    };
-    this.setDelay = function(delay) {
-        this.animationDelay = delay || 1;
-    };
-    this.setAnimation = function(arr) {
-        this.animation = arr;
-    };
-    this.clearAnimation = function() {
-        this.animation = [];
-    };
-    this.addFrame = function(frame) {
-        this.animation.push(frame);
-    };
-    this.getFrame = function(token) {
-        return this.animation[this.getFrameNumber(token)];
-    };
-    this.inherit = function(animator) {
-        this.clearAnimation();
-        this.setDelay(animator.animationDelay);
-        for (var i in animator.animation)
-            this.addFrame(animator.animation[i]);
-    };
-}
-
-
-function Texture(path) {
-    this.path = path;
-    this.isAnimated = false;
-    this.animator = new AnimationHelper();
-    this.resolution = { w: 64, h: 32 };
-    this.setTexture = function(path) {
-        this.path = path;
-        this.isAnimated = false;
-        return this;
-    };
-    this.setResolution = function(w, h) {
-        h = h || w;
-        this.resolution.w = w;
-        this.resolution.h = h;
-        return this;
-    };
-    this.setAnimation = function(animation, delay) {
-        this.animator.setDelay(delay);
-        this.animator.setAnimation(animation);
-        this.isAnimated = true;
-        return this;
-    };
-    this.resetAnimation = function(token) {
-        this.animator.resetAnimation(token);
-        return this;
-    };
-    this.getTexture = function(token) {
-        if (!this.isAnimated) return this.path;
-		else return this.animator.getFrame(token);
-    };
-    this.getResolution = function() {
-        return {
-			w: this.resolution.w * this.pixelScale,
-			h: this.resolution.h * this.pixelScale
-		};
-    };
-    this.pixelScale = 1;
-    this.setPixelScale = function(scale) {
-        this.pixelScale = scale;
-        return this;
-    };
-}
-
-var ce_default_entity_texture = new Texture("images/mob/ce_default_entity_texture.png").setPixelScale(8);
-var ce_missing_entity_texture = new Texture("images/mob/ce_missing_entity_texture.png").setPixelScale(1);
-
-
-var EntityRenderGlobalCache = {};
-EntityRenderGlobalCache.globalCache = {};
-EntityRenderGlobalCache.saveRenderAPI = function(api, name, isLocal) {
-    var cache;
-    if (isLocal) cache = api.localCache;
-    else cache = this.globalCache;
-    cache[name] = api.toCache();
-};
-EntityRenderGlobalCache.loadRenderAPI = function(api, name, isLocal) {
-    var cache;
-    if (isLocal) cache = api.localCache;
-    else cache = this.globalCache;
-    if (cache[name]) {
-        api.fromCache(cache[name]);
-        return true;
-    }
-    return false;
-};
-
-
-function RenderAPI(params) {
-    this.getID = this.getId = this.getRenderType = function() {
-        return parseInt(this.renderId);
-    };
-    this.init = function(params) {
-        this.isEmpty = true;
-        this.isChangeable = true;
-        this.renderer = null;
-        this.model = null;
-        this.parts = {};
-        this.renderId = -1;
-        if (!params) params = {};
-        if (typeof (params) == "number") {
-            this.isChangeable = false;
-			this.renderId = params;
-            return;
-        }
-        if (typeof (params) == "string") {
-            this.loadInitialState(params);
-            return;
-        }
-        if (typeof (params) != "object") {
-            this.isChangeable = false;
-            return;
-        }
-        if (typeof (params.name) == "string") {
-            this.loadInitialState(params.name);
-            return;
-        }
-        if (parseInt(params.item)) {
-            this.isChangeable = false;
-            this.renderer = Renderer.createItemSpriteRenderer(parseInt(params.item));
-        } else {
-            var skin = params.skin || "textures/logo.png";
-            var scale = params.scale || 1;
-            this.isEmpty = !params.raw;
-            this.isChangeable = true;
-            this.renderer = Renderer.createRendererWithSkin(skin, scale);
-            this.renderId = this.renderer.getRenderType();
-            this.initModel();
-        }
-    };
-    this.initModel = function() {
-        this.model = this.renderer.getModel();
-        if (this.isEmpty) {
-            this.getPart("head").clear();
-            this.getPart("body").clear();
-            this.getPart("leftArm").clear();
-            this.getPart("rightArm").clear();
-            this.getPart("leftLeg").clear();
-            this.getPart("rightLeg").clear();
-        }
-        this.getPart("headwear").clear(); // backcomp
-    };
-    this.checkChangeable = function() {
-        if (!this.isChangeable) MCSystem.throwException("cannot modify render with id " + this.renderId + " it is not changeable (it is native mob renderer, item sprite or render failed to create).");
-    };
-    this.rebuild = function() {
-        this.model.reset();
-    };
-    this.getModel = function() {
-        this.checkChangeable();
-        return this.model;
-    };
-    this.getPart = function(name) {
-        this.checkChangeable();
-        var part = this.parts[name];
-        if (!part && this.model) {
-            part = this.model.getPart(name);
-            if (part) this.parts[name] = part;
-        }
-        return part;
-    };
-    this.addPart = function(name, params) {
-        var dot = name.lastIndexOf(".");
-        if (dot == -1) MCSystem.throwException("addPart got invalid part name, it must be formatted as parentPartName.newPartName");
-        var parentName = name.substring(0, dot);
-        var parentPart = this.getPart(parentName);
-        if (!parentPart) MCSystem.throwException("addPart got invalid parent part name " + parentName + ", such part does not exist (full name given is " + name + ")");
-        var part = parentPart.addPart(name);
-        this.parts[name] = part;
-        if (params) this.setPartParams(name, params);
-        return part;
-    };
-    this.setPartParams = function(name, params) {
-        var part = this.getPart(name);
-        if (!part) MCSystem.throwException("setPart got invalid part name " + name);
-        part.setTextureSize(params.width || 64, params.height || 32);
-        part.setTextureOffset(params.u || 0, params.v || 0);
-        if (params.pos) part.setOffset(params.pos.x || params.pos[0] || 0, params.pos.y
-		                                || params.pos[1] || 0, params.pos.z || params.pos[2] || 0);
-        if (params.rotation) part.setRotation(params.rotation.x || params.rotation[0] || 0, params.rotation.y
-		                                        || params.rotation[1] || 0, params.rotation.z || params.rotation[2] || 0);
-    };
-    this.setPart = function(name, data, params) {
-        var part = this.getPart(name);
-        if (!part) MCSystem.throwException("setPart got invalid part name " + name);
-        if (params) {
-            if (!params.add) part.clear();
-            this.setPartParams(name, params);
-        }
-        this._setPartRecursive(part, data, { x: 0, y: 0, z: 0 });
-        this.model.reset();
-    };
-    this._setPartRecursive = function(part, data, coords) {
-        for (var i in data) {
-            var element = data[i];
-            if (!element.coords) {
-                print("RenderAPI Error: some element in part " + part + " has no coords, aborting...");
-                Logger.Log("RenderAPI Error: some element in part " + part + " has no coords, aborting...", "ERROR");
-                continue;
-            }
-            var elementCoords = {x: parseFloat(element.coords.x) + parseFloat(coords.x), y: parseFloat(element.coords.y) + parseFloat(coords.y), z: parseFloat(element.coords.z) + parseFloat(coords.z)};
-            if (element.uv) part.setTextureOffset(element.uv.x, element.uv.y);
-            if (element.size) {
-                element.size.w = element.size.w || 0;
-                part.addBox(elementCoords.x - element.size.x * 0.5, elementCoords.y - element.size.y * 0.5, elementCoords.z - element.size.z * 0.5, element.size.x, element.size.y, element.size.z, element.size.w);
-            }
-            if (element.children) this._setPartRecursive(part, elementCoords, element.children);
-        }
-    };
-    this.localCache = {};
-    this.fromCache = function(data) {
-        this.renderer = data.renderer;
-        this.renderId = data.renderId;
-        this.model = data.model;
-        this.isChangeable = data.isChangeable;
-        this.parts = data.parts;
-    };
-    this.toCache = function() {
-        return {
-			renderer: this.renderer,
-			renderId: this.renderId,
-			model: this.model,
-			parts: this.parts,
-			isChangeable: this.isChangeable
-		};
-    };
-    this.saveState = function(name, isLocal) {
-        EntityRenderGlobalCache.saveRenderAPI(this, name, isLocal);
-    };
-    this.loadState = function(name, isLocal) {
-        return EntityRenderGlobalCache.loadRenderAPI(this, name, isLocal);
-    };
-    this.loadInitialState = function(name) {
-        if (!this.loadState(name)) MCSystem.throwException("cannot create Render object from saved state " + name + ", it does not exist");
-    };
-    this.saveToNext = function(name, isLocal) {
-        this.saveState(name), this.init(params);
-    };
-    this.init(params);
-    this.setTextureResolution = function() {
-        logDeprecation("RenderAPI.setTextureResolution");
-    };
-    this.transform = function() {
-        if (!this.renderer) MCSystem.throwException("cannot apply transformations for native renders or renders that weren't created properly");
-        return this.renderer.transform;
-    };
-}
-
-var BASIC_NULL_RENDER = new RenderAPI();
-var ce_default_entity_render = new RenderAPI();
-ce_default_entity_render.setPart("body", [{
-	type: "box", coords: { x: 0, y: 16, z: 0 },
-	uv: { x: 0, y: 0 }, size: { x: 16, y: 16, z: 16 }}], {});
-
-
-function ModelAPI(parentModel) {
-    this.applyTextureResolution = function() {
-        var resolution = this.getTextureResolution();
-        if (this.render) this.render.setTextureResolution(resolution.w, resolution.h);
-        for (var i in this.animator.animation)
-            this.animator.animation[i].setTextureResolution(resolution.w, resolution.h);
-        return this;
-    };
-    this.setTexture = function(textureObj) {
-        this.texture = textureObj || ce_missing_entity_texture;
-        return this;
-    };
-    this.getTextureObj = function() {
-        return this.texture;
-    };
-    this.getTexture = function() {
-        return this.texture.getTexture();
-    };
-    this.getTextureResolution = function() {
-        return this.texture.getResolution();
-    };
-    this.isAnimated = false;
-    this.animator = new AnimationHelper();
-    this.setRender = function(render) {
-        this.isAnimated = false;
-        this.render = render || ce_default_entity_render;
-        return this;
-    };
-    this.createAnimation = function(ticks, func, delay) {
-        this.animator.clearAnimation();
-        this.animator.setDelay(delay);
-        var last = this.render;
-        for (var tick = 0; tick < ticks; tick++) {
-            var render = func(tick, this);
-            if (render) {
-                this.animator.addFrame(render);
-                last = render;
-            } else this.animator.addFrame(last);
-        }
-        this.isAnimated = true;
-        return this;
-    };
-    this.resetAnimation = function(token) {
-        this.texture.resetAnimation(token);
-        this.animator.resetAnimation(token);
-    };
-    this.getTextureAndRender = function(token) {
-        var texture = this.texture.getTexture(token);
-        var render;
-        if (!this.isAnimated) render = this.render;
-		else render = this.animator.getFrame(token);
-        return { texture: texture, render: render.getID() };
-    };
-    if (parentModel) {
-        this.setTexture(parentModel.texture);
-        this.setRender(parentModel.render);
-        this.animator.inherit(parentModel.animator);
-        this.isAnimated = parentModel.isAnimated;
-    } else {
-        this.setTexture(null);
-        this.setRender(null);
-    }
-}
-
-var ce_default_entity_model = new ModelAPI().setTexture(ce_default_entity_texture);
-var ce_empty_entity_model = new ModelAPI().setRender(BASIC_NULL_RENDER);
-var ce_missing_entity_model = new ModelAPI();
-
-
-
-function ModelWatcher(entity, model) {
-    this._texture = null;
-    this._render = null;
-    this.model = model;
-    this.entity = entity;
-    this.token = AnimatorToken.genToken();
-    this.update = function() {
-        var current = this.model.getTextureAndRender(this.token);
-        if (current.texture != this._texture) {
-            this._texture = current.texture;
-            EntityAPI.setSkin(this.entity, this._texture);
-        }
-        if (current.render != this._render) {
-            this._render = current.render;
-            EntityAPI.setRender(this.entity, this._render);
-        }
-    };
-    this.resetAnimation = function() {
-        this.model.resetAnimation(this.token);
-    };
-    this.destroy = function() {
-        this.remove = true;
-    };
-}
-
-
-function EntityAI(customPrototype) {
-    this.getDefaultPriority = function() {
-        return 1;
-    };
-    this.getDefaultName = function() {
-        return "basic-entity-ai";
-    };
-    this.params = {};
-    this.setParams = function(params) {
-        for (var name in params)
-            this.params[name] = params[name];
-    };
-    this.executionStarted = function() {};
-    this.executionEnded = function() {};
-    this.executionPaused = function() {};
-    this.executionResumed = function() {};
-    this.execute = function() {};
-    this.__execute = function() {
-        if (this.data.executionTimer > 0) {
-            this.data.executionTimer--;
-            if (this.data.executionTimer == 0) {
-                this.finishExecution();
-                return;
-            }
-        }
-        this.execute();
-    };
-    this.setExecutionTimer = function(timer) {
-        this.data.executionTimer = timer;
-    };
-    this.removeExecutionTimer = function() {
-        this.data.executionTimer = -1;
-    };
-    this.data = { executionTimer: -1 };
-    this.isInstance = false;
-    this.parent = null;
-    this.entity = null;
-    this.instantiate = function(parent, name) {
-        var instance = ModAPI.cloneObject(this, true);
-        instance.parent = parent;
-        instance.entity = parent.entity;
-        instance.controller = parent.AI;
-        instance.isInstance = true;
-        instance.executionName = name;
-        return instance;
-    };
-    this.aiEntityChanged = function(entity) {
-        this.entity = entity;
-    };
-    this.finishExecution = function() {
-        if (this.controller) this.controller.disableAI(this.executionName);
-    };
-    this.changeSelfPriority = function(priority) {
-        if (this.controller) this.controller.setPriority(this.executionName, priority);
-    };
-    this.enableAI = function(name, priority, extra) {
-        if (this.controller) this.controller.setPriority(name, priority, extra);
-    };
-    this.disableAI = function(name) {
-        if (this.controller) this.controller.setPriority(name);
-    };
-    this.setPriority = function(name, priority) {
-        if (this.controller) this.controller.setPriority(name, priority);
-    };
-    this.getAI = function(name) {
-        if (this.controller) return this.controller.getAI(name);
-    };
-    this.getPriority = function(name) {
-        if (this.controller) return this.controller.getPriority(name);
-    };
-    this.attackedBy = function(entity) {};
-    this.hurtBy = function(entity) {};
-    this.projectileHit = function(projectile) {};
-    this.death = function(entity) {};
-    for (var name in customPrototype) {
-        this[name] = customPrototype[name];
-    }
-}
-
-var EntityAIIdle = new EntityAI({
-	getDefaultPrioriy: function() {
-		return 1;
-	},
-	getDefaultName: function() {
-		return "idle";
-	}
-});
-
-function __normalizeAngle(x) {
-    while (x > Math.PI * 2) x -= Math.PI * 2;
-    while (x < 0) x += Math.PI * 2;
-    return x;
-}
-
-function __targetValue(x, val, speed) {
-    return x + Math.min(Math.max(-speed, val - x), speed);
-}
-
-function __targetAngle(angle, target, speed) {
-    angle = __normalizeAngle(angle);
-    target = __normalizeAngle(target);
-    if (target - Math.PI > angle) target -= Math.PI * 2;
-    if (angle - Math.PI > target) target += Math.PI * 2;
-    return __targetValue(angle, target, speed);
-}
-
-var EntityAIFollow = new EntityAI({
-	data: {
-		target: null,
-		targetEntity: null,
-		movingYaw: 0
-	},
-	params: {
-		speed: 0.2,
-		jumpVel: 0.45,
-		rotateSpeed: 0.4,
-		rotateRatio: 0.5,
-		rotateHead: true,
-		denyY: true
-	},
-	setParams: function(params) {
-		for (var name in params) {
-			this.params[name] = params[name];
-		}
-	},
-	execute: function() {
-		if (this.data.targetEntity) this.data.target = EntityAPI.getPosition(this.data.targetEntity);
-		if (this.data.target) {
-            var movingVec = EntityAPI.getMovingVector(this.entity);
-            var movingAngle = EntityAPI.getMovingAngle(this.entity).yaw;
-            var targetAngle = EntityAPI.getLookAt(this.entity, this.data.target.x, this.data.target.y, this.data.target.z).yaw;
-            var deltaAngle = movingAngle - targetAngle;
-            if (!this.data.movingYaw) this.data.movingYaw = targetAngle;
-            if (movingVec.xzsize < this.params.speed * 0.5)
-                this.data.movingYaw = __targetAngle(this.data.movingYaw, targetAngle + deltaAngle * 1.2, this.params.rotateSpeed);
-            this.data.movingYaw = __targetAngle(this.data.movingYaw, targetAngle, this.params.rotateSpeed * this.params.rotateRatio);
-            EntityAPI.moveToAngle(this.entity, {yaw: this.data.movingYaw, pitch: 0}, this.params);
-            if (this.params.rotateHead) EntityAPI.setLookAngle(this.entity, this.data.movingYaw, targetAngle.pitch);
-        }
-    }
-});
-
-var EntityAIPanic = new EntityAI({
-	getDefaultPriority: function() {
-		return 3;
-	},
-	getDefaultName: function() {
-		return "panic";
-	},
-	params: {
-		speed: 0.22,
-		angular_speed: 0.5
-	},
-	data: {
-		yaw: 0,
-		add: 0
-	},
-	setParams: function(params) {
-        for (var name in params)
-            this.params[name] = params[name];
-    },
-	randomize: function() {
-		if (Math.random() >= 0.5) this.data.add = 0;
-		else this.data.add = (Math.random() * -0.5) * this.params.angular_speed;
-	},
-	executionStarted: function() {
-		this.data.yaw = Math.random() * Math.PI * 2;
-		this.randomize();
-	},
-	execute: function() {
-		if (WorldAPI.getThreadTime() % 30 == 0) {
-			this.randomize();
-			EntityAPI.setLookAngle(this.entity, this.data.yaw, 0);
-		}
-		this.data.yaw += this.data.add;
-		EntityAPI.moveToLook(this.entity, {
-			speed: this.params.speed,
-			denyY: true,
-			jumpVel: 0.45
-		});
-	}
-});
-
-var EntityAIWander = new EntityAI({
-	getDefaultPriority: function() {
-		return 2;
-	},
-	getDefaultName: function() {
-		return "wander";
-	},
-	params: {
-		speed: 0.08,
-		angular_speed: 0.1,
-		delay_weight: 0.3
-	},
-	data: {
-		yaw: 0,
-		add: 0,
-		delay: false,
-		_delay: true
-	},
-	setParams: function(params) {
-		for (var name in params) this.params[name] = params[name];
-	},
-	randomize: function() {
-		if (Math.random() < this.params.delay_weight) this.data.delay = true;
-		else {
-			this.data.delay = false;
-			if (Math.random() >= 0.5) this.data.add = 0;
-            else this.data.add = (Math.random() * -0.5) * this.params.angular_speed;
-	    }
-	},
-	executionStarted: function() {
-		this.data.yaw = Math.random() * Math.PI * 2;
-		this.randomize();
-	},
-	execute: function() {
-		if (WorldAPI.getThreadTime() % 30 == 0) {
-			this.randomize();
-			EntityAPI.setLookAngle(this.entity, this.data.yaw, 0);
-		}
-		if (!this.data.delay) {
-			this.data.yaw += this.data.add;
-			EntityAPI.moveToLook(this.entity, {
-				speed: this.params.speed,
-				denyY: true,
-				jumpVel: this.data._delay ? 0 : 0.45
-			});
-		}
-		this.data._delay = this.data.delay;
-	}
-});
-
-var EntityAIAttack = new EntityAI({
-	params: {
-		attack_damage: 5,
-		attack_range: 2.5,
-		attack_rate: 12
-	},
-	data: {
-		timer: 0,
-		target: null
-	},
-	execute: function() {
-		if (this.data.target) {
-			if (EntityAPI.getDistanceToEntity(this.entity, this.data.target) < this.params.attack_range) {
-				if (this.data.timer-- < 0) {
-					this.data.timer = this.params.attack_rate;
-					EntityAPI.damageEntity(this.data.target, this.params.attack_damage);
-				}
-			} else this.data.timer = 0;
-		}
-	}
-});
-
-var EntityAISwim = new EntityAI({
-	getDefaultPriority: function() {
-		return -1;
-	},
-	getDefaultName: function() {
-		return "swim";
-	},
-	params: {
-		velocity: 0.2
-	},
-	inWater: false,
-	execute: function() {
-		if (WorldAPI.getThreadTime() % 5 == 0) {
-			var position = EntityAPI.getPosition(this.entity);
-			var tile = WorldAPI.getBlockID(position.x, position.y + 0.4, position.z);
-			this.inWater = (tile > 7 && tile < 12);
-		}
-		if (this.inWater) {
-			var velocity = EntityAPI.getVelocity(this.entity);
-			EntityAPI.setVelocity(this.entity, velocity.x, this.params.velocity, velocity.z);
-		}
-	}
-});
-
-function EntityAIWatcher(customPrototype) {
-    this.parent = EntityAI;
-    this.parent(customPrototype);
-    this.getDefaultPriority = function() {
-        return -1;
-    };
-    this.__execute = function() {
-        this.execute();
-    };
-}
-
-var EntityAIPanicWatcher = new EntityAIWatcher({
-	params: {
-		panic_time: 200,
-		priority_panic: 5,
-		priority_default: 1,
-		name: "panic"
-	},
-	data: {
-		timer: -1
-	},
-	hurtBy: function() {
-		this.setPriority(this.params.name, this.params.priority_panic);
-		this.data.timer = this.params.panic_time;
-	},
-	executionStarted: function() {
-		this.setPriority(this.params.name, this.params.priority_default);
-	},
-	execute: function() {
-		if (this.data.timer >= 0)
-			if (--this.data.timer == 0)
-				this.setPriority(this.params.name, this.params.priority_default);
-	}
-});
-
-
-
-var EntityAIController = {};
-EntityAIController.currentPriority = 0;
-EntityAIController.loadedAI = {};
-EntityAIController.loadedData = {};
-EntityAIController.isAILoaded = false;
-EntityAIController.getAITypes = function() {
-    return {
-		"main": {
-			type: EntityAIIdle
-		}
-	};
-};
-EntityAIController.loadEntityAI = function() {
-    var types = this.getAITypes();
-    this.loadedAI = {};
-    for (var name in types) {
-        var data = types[name];
-        var AI = data.type.instantiate(this.parent, name);
-        AI.setParams(data);
-        var enabled = data.enable + "" == "undefined" ? true : data.enable;
-        this.loadedAI[name] = {
-			AI: AI,
-			priority: data.priority || AI.getDefaultPriority(),
-			enabled: enabled
-		};
-        if (enabled) AI.executionStarted();
-    }
-    for (var name in this.loadedData) {
-        var data = this.loadedData[name];
-        var ai = this.loadedAI[name];
-        if (ai) {
-            ai.priority = data.p;
-            ai.enabled = data.e;
-            ai.data = data.d || {};
-        }
-    }
-    this.refreshPriorities();
-};
-
-EntityAIController.loaded = function() {
-    if (!this.isAILoaded) {
-        this.loadEntityAI();
-        this.aiLoaded();
-        this.isAILoaded = true;
-    } else this.callAIevent("executionResumed");
-};
-EntityAIController.nativeEntityChanged = function() {
-    this.callAIevent("aiEntityChanged", this.parent.entity);
-};
-EntityAIController.unloaded = function() {
-    this.callAIevent("executionPaused");
-};
-EntityAIController.aiLoaded = function() {};
-
-EntityAIController.getAI = function(name) {
-    return this.loadedAI[name].AI;
-};
-EntityAIController.getPriority = function(name) {
-    return this.loadedAI[name].priority;
-};
-EntityAIController.enableAI = function(name, priority, extra) {
-    var data = this.loadedAI[name];
-    if (data) {
-        if (!data.enabled) {
-            data.enabled = true;
-            data.AI.executionStarted(extra);
-        }
-        this.setPriority(name, priority + "" == "undefined" ? data.priority : priority);
-    }
-};
-EntityAIController.disableAI = function(name) {
-    var data = this.loadedAI[name];
-    if (data && data.enabled) {
-        data.enabled = false;
-        data.AI.executionEnded();
-        this.refreshPriorities();
-    }
-};
-EntityAIController.setPriority = function(name, priority) {
-    var data = this.loadedAI[name];
-    if (data && data.priority != priority) {
-        var isActive = data.priority == this.currentPriority;
-        data.priority = priority;
-        this.refreshPriorities();
-        if (isActive && data.priority != this.currentPriority)
-            data.AI.executionPaused();
-    }
-};
-EntityAIController.refreshPriorities = function() {
-    var maxPriority = -1;
-    for (var name in this.loadedAI) {
-        var data = this.loadedAI[name];
-        if (data.enabled && maxPriority < data.priority) {
-            maxPriority = data.priority;
-        }
-    }
-    if (maxPriority != this.currentPriority) {
-        for (var name in this.loadedAI) {
-            var data = this.loadedAI[name];
-            if (data.enabled) {
-                if (data.priority == maxPriority) data.AI.executionResumed();
-                if (data.priority == this.currentPriority) data.AI.executionPaused();
-            }
-        }
-    }
-    this.currentPriority = maxPriority;
-};
-
-EntityAIController.callAIevent = function(eventName, parameter, extra) {
-    for (var name in this.loadedAI) {
-        var data = this.loadedAI[name];
-        if (data.enabled) data.AI[eventName](parameter, extra);
-    }
-};
-EntityAIController.update = function() {
-    for (var name in this.loadedAI) {
-        var data = this.loadedAI[name];
-        if (data.enabled && (data.priority == this.currentPriority || data.priority == -1)) {
-            data.AI.__execute();
-        }
-    }
-    this.tick();
-};
-EntityAIController.save = function() {
-    var data = {};
-    for (var name in this.loadedAI) {
-        var ai = this.loadedAI[name];
-        data[name] = {
-			e: ai.enabled,
-			p: ai.priority,
-			d: ai.AI.data
-		};
-    }
-    return data;
-};
-EntityAIController.read = function(data) {
-    this.loadedData = data;
-};
-
-EntityAIController.tick = function() {};
-EntityAIController.attackedBy = function(attacker) {
-    this.callAIevent("attackedBy", attacker);
-};
-EntityAIController.hurtBy = function(attacker, damage) {
-    this.callAIevent("hurtBy", attacker, damage);
-};
-EntityAIController.death = function(attacker) {
-    this.callAIevent("death", attacker);
-};
-EntityAIController.projectileHit = function(projectile) {
-    this.callAIevent("projectileHit", projectile);
-};
-
-
-var EntityDescriptionController = {};
-EntityDescriptionController.isDynamic = false;
-EntityDescriptionController.getHitbox = function() {
-    return { w: 0.99, h: 0.99 };
-};
-EntityDescriptionController.getHealth = function() {
-    return 20;
-};
-EntityDescriptionController.getNameTag = function() {
-    return null;
-};
-EntityDescriptionController.getDrop = function(attacker) {
-    return [];
-};
-EntityDescriptionController.update = function() {};
-EntityDescriptionController.save = function() {};
-EntityDescriptionController.read = function() {};
-
-EntityDescriptionController.created = function() {
-    var health = this.getHealth();
-    Entity.setMaxHealth(this.entity, health);
-    Entity.setHealth(this.entity, health);
-};
-EntityDescriptionController.loaded = function() {
-    var health = this.getHealth();
-    Entity.setMaxHealth(this.entity, health);
-    var hitbox = this.getHitbox();
-    Entity.setCollisionSize(this.entity, hitbox.w || 0, hitbox.h || 0);
-    var nametag = this.getNameTag();
-    if (nametag) Entity.setNameTag(this.entity, nametag);
-    else Entity.setNameTag(this.entity, "");
-};
-EntityDescriptionController.unloaded = function() {};
-EntityDescriptionController.removed = function() {};
-
-EntityDescriptionController.getNumberFromData = function(data, defValue) {
-    if (!data) return defValue;
-    if (typeof (data) == "number") return data;
-    else {
-        if (data.min && data.max)
-            return parseInt((data.max - data.min + 1) * Math.random()) + data.min;
-        else if (!data.length) return defValue;
-		else return data[parseInt(data.length * Math.random())];
-    }
-};
-EntityDescriptionController.provideDrop = function(attacker) {
-    var drop = this.getDrop(attacker);
-    var pos = EntityAPI.getPosition(this.entity);
-    var dropItem = function(id, count, data, extra) {
-        EntityAPI.setVelocity(Level.dropItem(pos.x, pos.y + 0.3, pos.z, 0, id, count, data, extra),
-		                        Math.random() * 0.4 - 0.2, Math.random() * 0.3, Math.random() * 0.4 - 0.2);
-    };
-    for (var i in drop) {
-        var item = drop[i];
-        var chance = item.chance || 1;
-        if (item.id && Math.random() < chance) {
-            var count = this.getNumberFromData(item.count, 1);
-            var data = this.getNumberFromData(item.data, 0);
-            if (item.separate) {
-                for (var j = 0; j < count; j++)
-                    dropItem(item.id, 1, data);
-            } else dropItem(item.id, count, data, item.extra);
-        }
-    }
-};
-EntityDescriptionController.death = function(attacker) {
-    this.provideDrop(attacker);
-};
-
-
-var EntityVisualController = {};
-EntityVisualController.modelWatchers = {};
-EntityVisualController.modelWatcherStack = [];
-
-EntityVisualController.getModels = function() {
-    return {
-		"main": ce_default_entity_model
-	};
-};
-EntityVisualController.createModelWatchers = function() {
-    this.modelWatchers = {};
-    var models = this.getModels();
-    if (!models.main) models.main = ce_default_entity_model;
-    for (var name in models)
-        this.modelWatchers[name] = new ModelWatcher(this.entity, models[name]);
-};
-EntityVisualController.getModelWatcher = function(name) {
-    return this.modelWatchers[name];
-};
-EntityVisualController.setModel = function(name, ticks) {
-    var watcher = this.getModelWatcher(name);
-    if (!watcher) {
-        Logger.Log("cannot set entity model: no model watcher for '" + name + "' found.", "ERROR");
-        return;
-    }
-    if (!this.modelWatcherStack) this.modelWatcherStack = [];
-    if (ticks < 0) this.modelWatcherStack = [{ name: name, ticks: -1 }];
-	else this.modelWatcherStack.unshift({ name: name, ticks: ticks });
-    watcher.resetAnimation();
-};
-EntityVisualController.resetModel = function() {
-    this.modelWatcherStack = [];
-};
-EntityVisualController.resetAllAnimations = function() {
-    for (var name in this.modelWatchers)
-        this.modelWatchers[name].resetAnimation();
-};
-EntityVisualController.getCurrentModelName = function() {
-    var current = this.modelWatcherStack[0];
-    while (current && current.ticks == 0)
-        current = this.modelWatcherStack.shift();
-    return current || { name: "main", ticks: -1 };
-};
-
-EntityVisualController.loaded = function() {
-    this.createModelWatchers();
-};
-EntityVisualController.update = function() {
-    var current = this.getCurrentModelName();
-    var watcher = this.getModelWatcher(current.name);
-    if (watcher) watcher.update();
-    current.ticks--;
-};
-EntityVisualController.save = function() {
-    return this.modelWatcherStack;
-};
-EntityVisualController.read = function(data) {
-    this.modelWatcherStack = data || [];
-};
-
-
-var EntityEventController = {};
-EntityEventController.update = function() {
-    this.tick();
-};
-EntityEventController.save = function() {};
-EntityEventController.read = function() {};
-EntityEventController.tick = function() {};
-EntityEventController.removed = function() {};
-EntityEventController.created = function(extra) {};
-EntityEventController.loaded = function() {};
-EntityEventController.unloaded = function() {};
-EntityEventController.attackedBy = function(attacker) {};
-EntityEventController.hurtBy = function(attacker, damage) {};
-EntityEventController.death = function(attacker) {};
-EntityEventController.projectileHit = function(projectile) {};
-
-
-
-var CustomEntityConfig = {};
-CustomEntityConfig.unloaded_despawn_time_in_secs = 600;
-CustomEntityConfig.despawn_unloaded_entities =true;
-
-var ENTITY_UNLOAD_DISTANCE = 56;
-
-function CustomEntity(nameId) {
-    this.nameId = nameId;
-    this.controllers = {};
-    this.isInstance = false;
-    this.entity = null;
-    this.age = 0;
-    this.unloadedTime = 0;
-    this.realPosition = null;
-    this.__base_type = 28;
-    var self = this;
-    this.saverId = Saver.registerObjectSaver(this.nameId, {
-		read: function(obj) {
-			self.read(obj);
-			return null;
-		},
-		save: function(obj) {
-			return obj.save();
-		}
-	});
-    this.addController = function(name, basicPrototype) {
-        var controller = ModAPI.cloneObject(basicPrototype, true);
-        controller.parent = null;
-        controller.__controller_name = name;
-        this[name] = controller;
-        this.controllers[name] = controller;
-        return this;
-    };
-    this.customizeController = function(name, customPrototype) {
-        if (!this[name]) {
-            Logger.Log("Cannot customize entity controller " + name + ": no such defined", "ERROR");
-            return;
-        }
-        var customController = ModAPI.cloneObject(customPrototype, true);
-        var baseController = this[name];
-        for (var name in customController)
-            baseController[name] = customController[name];
-    };
-    this.customizeEvents = function(custom) {
-        this.customizeController("event", custom);
-    };
-    this.customizeDescription = function(custom) {
-        this.customizeController("description", custom);
-    };
-    this.customizeVisual = function(custom) {
-        this.customizeController("visual", custom);
-    };
-    this.customizeAI = function(custom) {
-        this.customizeController("AI", custom);
-    };
-    this.setBaseType = function(type) {
-        if (this.isInstance) {
-            Logger.Log("cannot set base entity type on entity in world", "ERROR");
-            return;
-        }
-        this.__base_type = type;
-    };
-    this.callControllerEvent = function() {
-        var event = arguments[0];
-        var params = [];
-        for (var i in arguments)
-            if (i > 0) params.push(arguments[i]);
-        for (var name in this.controllers) {
-            var controller = this.controllers[name];
-            if (controller[event]) controller[event].apply(controller, params);
-        }
-    };
-    this.setNativeEntity = function(entity) {
-        this.entity = parseInt(entity);
-        for (var name in this.controllers) {
-            var controller = this.controllers[name];
-            controller.entity = parseInt(entity);
-        }
-        this.callControllerEvent("nativeEntityChanged");
-    };
-    this.recreateEntity = function() {
-        if (this.realPosition) {
-            this.lockRemovalHook = true;
-            Entity.remove(this.entity);
-            this.lockRemovalHook = false;
-            this.setNativeEntity(Level.spawnMob(this.realPosition.x, this.realPosition.y, this.realPosition.z, this.__base_type));
-            if (!this.isLoaded) {
-                this.isLoaded = true;
-                this.callControllerEvent("loaded");
-            }
-        }
-    };
-    this.getPlayerDistance = function() {
-        var dx = getPlayerX() - this.realPosition.x;
-        var dz = getPlayerZ() - this.realPosition.z;
-        return Math.sqrt(dx * dx + dz * dz);
-    };
-    this.denyDespawn = function() {
-        this.isNaturalDespawnAllowed = false;
-        this.isDespawnDenied = true;
-    };
-    this.allowNaturalDespawn = function() {
-        this.isNaturalDespawnAllowed = true;
-        this.isDespawnDenied = false;
-    };
-    this.handleUnloadedState = function() {
-        this.unloadedTime++;
-        if (this.age % 200 == 0) {
-            if (!this.isDespawnDenied && CustomEntityConfig.despawn_unloaded_entities && this.unloadedTime > CustomEntityConfig.unloaded_despawn_time_in_secs) {
-                this.destroy();
-            } else {
-                if (this.getPlayerDistance() < ENTITY_UNLOAD_DISTANCE) {
-                    if (!this.isNaturalDespawnAllowed) {
-                        if (!this.isDestroyed) this.recreateEntity();
-                    } else this.destroy();
-                }
-            }
-        }
-    };
-    this.update = function() {
-        if (this.age % 20 == 0) {
-            var position = EntityAPI.getPosition(this.entity);
-            var isLoaded = position.y > 0;
-            if (isLoaded) this.realPosition = position;
-            if (this.isLoaded && !isLoaded)
-                this.callControllerEvent("unloaded");
-            if (!this.isLoaded && isLoaded)
-                this.callControllerEvent("loaded");
-            this.isLoaded = isLoaded;
-            if (isLoaded) this.unloadedTime = 0;
-            else this.handleUnloadedState();
-        }
-        if (this.isLoaded)
-            for (var name in this.controllers) 
-                this.controllers[name].update();
-        this.age++;
-    };
-    this.instantiate = function(entity) {
-        entity = parseInt(entity);
-        var instance = ModAPI.cloneObject(this, true);
-        instance.entity = entity;
-        instance.realPosition = EntityAPI.getPosition(entity);
-        instance.isInstance = true;
-        instance.isLoaded = false;
-        for (var name in instance.controllers) {
-            var controller = instance.controllers[name];
-            controller.parent = instance;
-            controller.entity = entity;
-            instance[name] = controller;
-        }
-        Saver.registerObject(instance, this.saverId);
-        MobRegistry.registerUpdatableAsEntity(instance);
-        Updatable.addUpdatable(instance);
-        return instance;
-    };
-    this.lockRemovalHook = false;
-    this.registerRemoval = function() {
-        if (this.lockRemovalHook) return;
-        this.isLoaded = false;
-        if (EntityAPI.getXZPlayerDis(this.entity) > ENTITY_UNLOAD_DISTANCE)
-            this.callControllerEvent("unloaded");
-        else this.destroy();
-    };
-    this.destroy = function() {
-        this.remove = this.isDestroyed = true;
-        this.callControllerEvent("removed");
-        Entity.remove(this.entity);
-        this.callControllerEvent("unloaded");
-    };
-    this.read = function(data) {
-        var instance;
-        if (this.isInstance) instance = this;
-		else instance = this.instantiate(data.entity);
-        instance.entity = data.entity || null;
-        instance.age = data.age || 0;
-        instance.unloadedTime = data.unloaded || 0;
-        instance.realPosition = data.rp || null;
-        for (var name in data.controllers) {
-            var controller = instance[name];
-            if (controller) {
-                controller.read(data.controllers[name]);
-                controller.entity = instance.entity;
-            } else Logger.Log("Entity controller is missing " + name + " while reading entity data", "WARNING");
-        }
-    };
-    this.save = function() {
-        var data = {
-			entity: parseInt(this.entity),
-			age: this.age,
-			oneAndHalf: 1.5,
-			unloaded: this.unloadedTime,
-			controllers: {}, 
-			rp: this.realPosition
-		};
-        for (var name in this.controllers)
-            data.controllers[name] = this.controllers[name].save(name);
-        return data;
-    };
-}
-
-// TODO: why it isn't availabled?
-// Callback.addCallback("CoreConfigured", function(config) {
-    // CustomEntityConfig = config.access("perfomance.entity");
-// });
-
-
-var MobRegistry = {};
-MobRegistry.customEntities = {};
-MobRegistry.loadedEntities = [];
-MobRegistry.registerEntity = function(name) {
-    var customEntityType = new CustomEntity(name);
-    customEntityType.addController("event", EntityEventController);
-    customEntityType.addController("description", EntityDescriptionController);
-    customEntityType.addController("visual", EntityVisualController);
-    customEntityType.addController("AI", EntityAIController);
-    this.customEntities[name] = customEntityType;
-    return customEntityType;
-};
-MobRegistry.registerUpdatableAsEntity = function(updatable) {
-    for (var i in this.loadedEntities) {
-        if (this.loadedEntities[i].entity == updatable.entity) {
-            Logger.Log("Dublicate entities updatables loaded for " + updatable.entity + ", removing second one", "WARNING");
-            updatable.remove = true;
-            return;
-        }
-    }
-    this.loadedEntities.push(updatable);
-};
-MobRegistry.spawnEntityAsPrototype = function(typeName, coords, extraData) {
-    var customEntityType = this.customEntities[typeName];
-    if (!customEntityType) Logger.Log("Cannot spawn custom entity: type " + typeName + "is not found", "ERROR");
-    var entity = Level.spawnMob(coords.x, coords.y, coords.z, customEntityType.__base_type);
-    var customEntity = customEntityType.instantiate(entity);
-    customEntity.callControllerEvent("created", extraData);
-    customEntity.update();
-    return customEntity;
-};
-MobRegistry.getEntityUpdatable = function(entity) {
-    entity = parseInt(entity);
-    for (var i in this.loadedEntities)
-        if (this.loadedEntities[i].entity == entity)
-            return this.loadedEntities[i];
-    return null;
-};
-MobRegistry.registerNativeEntity = function(entity) {
-	// TODO: make this function useful
-};
-MobRegistry.registerEntityRemove = function(entity) {
-    var updatable = this.getEntityUpdatable(entity);
-    if (updatable) updatable.registerRemoval();
-};
-MobRegistry.resetEngine = function() {
-    this.loadedEntities = [];
-};
-
-Callback.addCallback("LevelSelected", function() {
-    MobRegistry.resetEngine();
-});
-Callback.addCallback("EntityAdded", function(entity) {
-    MobRegistry.registerNativeEntity(entity);
-});
-Callback.addCallback("EntityRemoved", function(entity) {
-    MobRegistry.registerEntityRemove(entity);
-});
-Callback.addCallback("PlayerAttack", function(attacker, victim) {
-    var updatable = MobRegistry.getEntityUpdatable(victim);
-    if (updatable) updatable.callControllerEvent("attackedBy", attacker);
-});
-Callback.addCallback("EntityDeath", function(entity, attacker) {
-    var updatable = MobRegistry.getEntityUpdatable(entity);
-    if (updatable) updatable.callControllerEvent("death", attacker);
-});
-Callback.addCallback("EntityHurt", function(attacker, victim, damage) {
-    var updatable = MobRegistry.getEntityUpdatable(victim);
-    if (updatable) updatable.callControllerEvent("hurtBy", attacker, damage);
-});
-Callback.addCallback("ProjectileHitEntity", function(projectile, entity) {
-    var updatable = MobRegistry.getEntityUpdatable(entity);
-    if (updatable) updatable.callControllerEvent("projectileHit", projectile);
-});
-
-
-var ENTITY_MIN_SPAWN_DIS = 32;
-var ENTITY_MAX_SPAWN_DIS = 63;
-
-var EntitySpawnRegistry = {};
-EntitySpawnRegistry.spawnData = [];
-EntitySpawnRegistry.registerSpawn = function(entityType, rarity, condition, denyNaturalDespawn) {
-    if (!condition)
-        condition = function() {
-            return parseInt(Math.random() * 3 + 1);
-        };
-    this.spawnData.push({
-		type: entityType,
-		rarity: rarity,
-		condition: condition,
-		denyNaturalDespawn: denyNaturalDespawn
-	});
-};
-EntitySpawnRegistry.getRandomSpawn = function(rarityMultiplier) {
-    var spawn = this.spawnData[parseInt(Math.random() * this.spawnData.length)];
-    if (spawn) {
-        var chance = spawn.rarity * this.spawnData.length * rarityMultiplier;
-        if (Math.random() < chance) return spawn;
-    }
-};
-EntitySpawnRegistry.getRandPosition = function() {
-    var angle = Math.random() * Math.PI * 2;
-    var dist = Math.random() * (ENTITY_MAX_SPAWN_DIS - ENTITY_MIN_SPAWN_DIS) + ENTITY_MIN_SPAWN_DIS;
-    return { x: getPlayerX() + Math.sin(angle) * dist, z: getPlayerZ() + Math.cos(angle) * dist };
-};
-EntitySpawnRegistry.executeSpawn = function(spawn, position) {
-    position = position || this.getRandPosition();
-    var api = {
-		y: -1,
-		accessY: function() {
-			if (this.y == -1) this.y = WorldGenerationUtils.findLowSurface(position.x, position.z).y + 1;
-			return this.y;
-		},
-		condition: spawn.condition
-	};
-    var count = api.condition(position.x, position.z);
-    if (count > 0) {
-        position.y = api.accessY();
-        for (var i = 0; i < count; i++) {
-            var entity = EntityAPI.spawnCustomAtCoords(spawn.type, position);
-            entity.allowNaturalDespawn(!spawn.denyNaturalDespawn);
-            EntityAPI.setVelocity(entity.entity, Math.random() - 0.5, 0, Math.random() - 0.5);
-        }
-    }
-};
-
-EntitySpawnRegistry.counter = 0;
-EntitySpawnRegistry.tick = function() {
-    if (this.counter++ % 100 == 0) {
-        var spawn = this.getRandomSpawn(5 / 60);
-        if (spawn) this.executeSpawn(spawn);
-    }
-};
-EntitySpawnRegistry.onChunkGenerated = function(x, z) {
-    for (var i = 0; i < this.spawnData.length; i++) {
-        var position = {
-			x: (x + Math.random()) * 16,
-			z: (z + Math.random()) * 16
-		};
-        var spawn = this.getRandomSpawn(2 / this.spawnData.length);
-        if (spawn) this.executeSpawn(spawn, position);
-    }
-};
-
-Callback.addCallback("tick", function() {
-    EntitySpawnRegistry.tick();
-});
-Callback.addCallback("GenerateChunk", function(x, z) {
-    EntitySpawnRegistry.onChunkGenerated(x, z);
-});
-
-
-
-var PlayerAPI = {};
-PlayerAPI.get = function() {
-    return getPlayerEnt();
-};
-PlayerAPI.getNameForEnt = function(ent) {
-    return Player.getName(ent);
-};
-PlayerAPI.getName = function() {
-    return this.getNameForEnt(this.get());
-};
-PlayerAPI.getDimension = function() {
-    return Player.getDimension();
-};
-PlayerAPI.isPlayer = function(ent) {
-    return Player.isPlayer(ent);
-};
-PlayerAPI.getPointed = function() {
-    var pointedData = Player.getPointed();
-    var pos = pointedData.pos;
-    pointedData.block = WorldAPI.getBlock(pos.x, pos.y, pos.side);
-    return pointedData;
-};
-
-PlayerAPI.getInventory = function(loadPart, handleEnchant, handleNames) {
-    logDeprecation("Player.getInventory");
-	return null;
-};
-PlayerAPI.addItemToInventory = function(id, count, data, extra, preventDrop) {
-    Player.addItemInventory(id, count, data, preventDrop, extra);
-};
-PlayerAPI.getCarriedItem = function(handleEnchant, handleNames) {
-    return Player.getCarriedItem();
-};
-PlayerAPI.setCarriedItem = function(id, count, data, extra) {
-    return Player.setCarriedItem(id, count, data, extra);
-};
-PlayerAPI.getOffhandItem = function() {
-    return Player.getOffhandItem();
-};
-PlayerAPI.setOffhandItem = function(id, count, data, extra) {
-    return Player.setOffhandItem(id, count, data, extra);
-};
-PlayerAPI.decreaseCarriedItem = function(count) {
-    if (count + "" == "undefined") count = 1;
-    var carried = this.getCarriedItem(true, true);
-    this.setCarriedItem(carried.id, carried.count - count, carried.data, carried.enchant, carried.name);
-};
-PlayerAPI.getInventorySlot = function(slot) {
-    return Player.getInventorySlot(slot);
-};
-PlayerAPI.setInventorySlot = function(slot, id, count, data, extra) {
-    return Player.setInventorySlot(slot, id, count, data, extra);
-};
-PlayerAPI.getArmorSlot = function(slot) {
-    return Player.getArmorSlot(slot);
-};
-PlayerAPI.setArmorSlot = function(slot, id, count, data, extra) {
-    return Player.setArmorSlot(slot, id, count, data, extra);
-};
-PlayerAPI.getSelectedSlotId = function() {
-    return Player.getSelectedSlotId();
-};
-PlayerAPI.setSelectedSlotId = function(slot) {
-    return Player.setSelectedSlotId(slot);
-};
-
-PlayerAPI.setPosition = function(x, y, z) {
-    Entity.setPosition(getPlayerEnt(), x, y, z);
-};
-PlayerAPI.getPosition = function() {
-    var pos = Entity.getPosition(getPlayerEnt());
-    return { x: pos[0], y: pos[1], z: pos[2] };
-};
-PlayerAPI.addPosition = function(x, y, z) {
-    var pos = this.getPosition();
-    this.setPosition(pos.x + x, pos.y + y, pos.z + z);
-};
-
-PlayerAPI.setVelocity = function(x, y, z) {
-    Entity.setVelocity(getPlayerEnt(), x, y, z);
-};
-PlayerAPI.getVelocity = function() {
-    var vel = Entity.getVelocity(getPlayerEnt());
-    return { x: vel[0], y: vel[1], z: vel[2] };
-};
-PlayerAPI.addVelocity = function(x, y, z) {
-    var vel = this.getVelocity();
-    this.setVelocity(vel.x + x, vel.y + y, vel.z + z);
-};
-
-PlayerAPI.experience = function() {
-    return {
-		get: this.getExperience,
-		set: this.setExperience,
-		add: this.addExperience
-	};
-};
-PlayerAPI.getExperience = function() {
-    return Player.getExp();
-};
-PlayerAPI.setExperience = function(exp) {
-    Player.getExp(exp);
-};
-PlayerAPI.addExperience = function(exp) {
-    Player.addExp(exp);
-};
-
-PlayerAPI.level = function() {
-    return {
-		get: this.getLevel,
-		set: this.setLevel,
-		add: this.addLevel
-	};
-};
-PlayerAPI.getLevel = function() {
-    return Player.getLevel();
-};
-PlayerAPI.setLevel = function(level) {
-    Player.setLevel(level);
-};
-PlayerAPI.addLevel = function(level) {
-    this.setLevel(this.getLevel() + level);
-};
-
-PlayerAPI.flying = function() {
-    return {
-		set: this.setFlying,
-		get: this.getFlying,
-		getEnabled: this.getFlyingEnabled,
-		setEnabled: this.setFlyingEnabled
-	};
-};
-PlayerAPI.getFlyingEnabled = function() {
-    return Player.canFly();
-};
-PlayerAPI.setFlyingEnabled = function(enabled) {
-    Player.setCanFly(enabled);
-};
-PlayerAPI.getFlying = function() {
-    return Player.isFlying();
-};
-PlayerAPI.setFlying = function(enabled) {
-    Player.setFlying(enabled);
-};
-
-PlayerAPI.exhaustion = function() {
-    return {
-		get: this.getExhaustion,
-		set: this.setExhaustion
-	};
-};
-PlayerAPI.getExhaustion = function() {
-    return Player.getExhaustion();
-};
-PlayerAPI.setExhaustion = function(value) {
-    Player.setExhaustion(value);
-};
-
-PlayerAPI.hunger = function() {
-    return {
-		get: this.getHunger,
-		set: this.setHunger
-	};
-};
-PlayerAPI.getHunger = function() {
-    return Player.getHunger();
-};
-PlayerAPI.setHunger = function(value) {
-    Player.setHunger(value);
-};
-
-PlayerAPI.saturation = function() {
-    return {
-		get: this.getSaturation,
-		set: this.setSaturation
-	};
-};
-PlayerAPI.getSaturation = function() {
-    return Player.getSaturation();
-};
-PlayerAPI.setSaturation = function(value) {
-    Player.setSaturation(value);
-};
-
-PlayerAPI.health = function() {
-    return {
-		get: this.getHealth,
-		set: this.setHealth
-	};
-};
-PlayerAPI.getHealth = function() {
-    return Entity.getHealth(getPlayerEnt());
-};
-PlayerAPI.setHealth = function(value) {
-    Entity.setHealth(getPlayerEnt(), value);
-};
-
-PlayerAPI.score = function() {
-    return {
-		get: this.getScore
-	};
-};
-PlayerAPI.getScore = function() {
-    return Player.getScore();
-};
-
-
-
-var ANIMATION_BASE_ENTITY = 10;
-
-var AnimationRegistry = {};
-AnimationRegistry.animationList = [];
-AnimationRegistry.resetEngine = function() {
-    this.animationList = [];
-};
-AnimationRegistry.registerAnimation = function(anim) {
-    this.animationList.push(anim);
-};
-AnimationRegistry.getEntityArray = function() {
-    var entities = [];
-    try {
-        for (var i in this.animationList) {
-            var anim = this.animationList[i];
-            if (anim.entity && !anim.remove)
-                entities.push(parseInt(anim.entity));
-        }
-    } catch (e) {
-        Logger.Log("animation entities array is damaged (" + entities.length + " entities injected)", "ERROR");
-    }
-    return { entites: entities };
-};
-
-AnimationRegistry.onAttack = function(victim) {
-    for (var i in this.animationList) {
-        var anim = this.animationList[i];
-        if (anim.entity == victim && !anim.remove) {
-            preventDefault();
-            anim.onAttack();
-        }
-    }
-};
-
-Callback.addCallback("PlayerAttack", function(attacker, victim) {
-    AnimationRegistry.onAttack(victim);
-});
-
-
-function AnimationBase(x, y, z) {
-    this.render = null;
-    Saver.registerObject(this, nonSavesObjectSaver);
-    this.setPos = function(x, y, z) {
-        this.coords = { x: x, y: y, z: z };
-        if (this.render) this.render.setPos(x, y, z);
-    };
-    this.setInterpolationEnabled = function(enabled) {
-        if (this.render) this.render.setInterpolationEnabled(enabled);
-    };
-    this.setIgnoreBlocklight = function(ignore) {
-        if (this.render) this.render.setIgnoreBlocklight(ignore);
-    };
-    this.setBlockLightPos = function(x, y, z) {
-        if (this.render) this.render.setBlockLightPos(x, y, z);
-    };
-    this.resetBlockLightPos = function() {
-        if (this.render) this.render.resetBlockLightPos();
-    };
-    this.setSkylightMode = function() {
-        this.setBlockLightPos(this.coords.x, 256, this.coords.z);
-        this.setIgnoreBlocklight(false);
-    };
-    this.setBlocklightMode = function() {
-        this.resetBlockLightPos();
-        this.setIgnoreBlocklight(false);
-    };
-    this.setIgnoreLightMode = function() {
-        this.resetBlockLightPos();
-        this.setIgnoreBlocklight(true);
-    };
-    this.setPos(x, y, z);
-    this.description = {};
-    this.createRenderIfNeeded = function() {
-        if (!this.description) return;
-        if (!this.render) {
-            if (this.description.render)
-				this.render = StaticRenderer.createStaticRenderer(this.description.render,
-				                                this.coords.x, this.coords.y, this.coords.z);
-        }
-        if (this.render) {
-            if (this.description.skin)
-				this.render.setSkin(this.description.skin);
-            if (this.description.scale)
-				this.render.setScale(this.description.scale);
-            if (this.description.render)
-				this.render.setRenderer(this.description.render);
-        }
-    };
-    this.isLoaded = false;
-    this.updateRender = function() {
-        if (this.isLoaded)
-			this.createRenderIfNeeded();
-        else {
-            if (this.render) {
-                this.render.remove();
-                this.render = null;
-            }
-        }
-    };
-    this.load = function() {
-        this.remove = false;
-        this.isLoaded = true;
-        this.updateRender();
-    };
-    this.loadCustom = function(func) {
-        this.load();
-        this.update = func;
-        Updatable.addUpdatable(this);
-    };
-    this.getAge = function() {
-        return 0;
-    };
-    this.refresh = function() {
-        this.updateRender();
-    };
-    this.describe = function(description) {
-        for (var name in description)
-            this.description[name] = description[name];
-        this.updateRender();
-    };
-    this.getRenderAPI = function(base) {
-        if (!this.description.renderAPI)
-            this.description.renderAPI = new RenderAPI(base);
-        return this.description.renderAPI;
-    };
-    this.destroy = function() {
-        this.remove = true;
-        this.isLoaded = false;
-        this.updateRender();
-    };
-}
-
-
-var AnimationItemLoadHelper = {};
-AnimationItemLoadHelper.postedAnimations = [];
-AnimationItemLoadHelper.postRequired = true;
-AnimationItemLoadHelper.onLevelDisplayed = function() {
-	this.postRequired = false;
-	for (var i in this.postedAnimations) {
-		var anim = this.postedAnimations[i];
-		if (anim && anim.__postedItem)
-			anim.describeItem(anim.__postedItem);
-	}
-	this.postedAnimations = [];
-};
-
-AnimationItemLoadHelper.session = 1;
-AnimationItemLoadHelper.onLevelLeft = function() {
-	this.postRequired = true;
-	this.postedAnimations = [];
-	this.session++;
-};
-AnimationItemLoadHelper.handleItemDescribeRequest = function(anim, item) {
-	if (this.postRequired) {
-		if (anim.__session != this.session) {
-			anim.__session = this.session;
-			this.postedAnimations.push(anim);
-		}
-		anim.__postedItem = item;
-		return false;
-	} else return true;
-};
-
-Callback.addCallback("LevelDisplayed", function() {
-    AnimationItemLoadHelper.onLevelDisplayed();
-});
-
-Callback.addCallback("LevelLeft", function() {
-    AnimationItemLoadHelper.onLevelLeft();
-});
-
-
-var USE_ALTERNATIVE_ITEM_MODEL = false;
-
-function AnimationItem(x, y, z) {
-    this.parent = AnimationBase;
-    this.parent(x, y, z);
-    this.describeItemDefault = function(item) {
-        if (!AnimationItemLoadHelper.handleItemDescribeRequest(this, item))
-            return;
-        if (!item.size) item.size = 0.5;
-        var rotation = item.rotation;
-        if (!rotation || typeof (rotation) == "string") {
-            rotation = [0, 0, 0];
-            if (rotation == "x") rotation = [0, 0, Math.PI / 2];
-            if (rotation == "z") rotation = [Math.PI / 2, 0, 0];
-        }
-        var itemModel = Renderer.getItemModel(item.id, item.count, item.data, item.size, rotation[0], rotation[1], rotation[2], !item.notRandomize);
-        if (itemModel != null) {
-            itemModel.setFinalizeable(false);
-            this.describe({ render: itemModel.getRenderType() });
-        }
-        if (this.lastItemModel && this.lastItemModel != itemModel)
-            this.lastItemModel.release();
-        this.lastItemModel = itemModel;
-        return itemModel;
-    };
-    this.describeItemAlternative = function(item, offset) {
-        if (!item.size) item.size = 0.5;
-        var render = new RenderAPI({empty: true});
-        var stateName = "__item" + item.id + "|" + item.count + "|" + item.data + "|" + item.size + "|" + item.rotation + "|" + !item.notRandomize;
-        if (!offset) offset = { x: 0, y: 0, z: 0 };
-		else stateName += "|" + offset.x + "|" + offset.y + "|" + offset.z;
-        if (!render.loadState(stateName)) {
-            render.createBasicModel();
-            var model = [];
-            var size = parseInt(item.size * 16);
-            var addBox = function(z, rx, ry) {
-                model.push({
-					type: "box",
-					uv: { x: 0, y: 0 },
-					size: { x: size, y: size, z: 0 },
-					coords: { x: rx + offset.x * 16, y: 25 + ry - offset.y * 16, z: z - offset.z * 16 }
-				});
-            };
-            var fract = Math.min(64, size);
-            var width = size / 16;
-            for (var z = 0; z < item.count; z++) {
-                var randomX = 0, randomY = 0;
-                if (z > 0 && !item.notRandomize) {
-                    randomX = Math.random() * 5 - 2.5;
-                    randomY = Math.random() * 5 - 2.5;
-                }
-                for (var f = 0; f <= width; f += width / fract)
-                    addBox((z - 0.5 - item.count / 2) * width + f, randomX, randomY);
-            }
-            render.setPart("body", model, {width: size, height: size});
-            render.saveState(stateName);
-        }
-        this.describe({
-			renderAPI: render,
-			skin: ItemIconSource.getIconName(item.id, item.data)
-		});
-    };
-    this.describeItem = this.describeItemDefault;
-    this.tick = function() {};
-    
-    this.setItemRotation = function(x, y, z) {
-        if (this.__postedItem)
-            this.__postedItem.rotation = [x, y, z];
-        if (this.lastItemModel) {
-            var part = this.lastItemModel.getModel().getPart("item");
-            if (part) part.setRotation(x, y, z);
-        }
-    };
-
-    this.setItemSize = function(size) {
-        if (this.__postedItem) this.__postedItem.size = [x, y, z];
-        if (this.lastItemModel) this.lastItemModel.setScale(size);
-    };
-    
-    this.setItemSizeAndRotation = function(size, x, y, z) {
-        this.setItemSize(size);
-        this.setItemRotation(x, y, z);
-    };
-
-    this._destroy = this.destroy;
-    this.destroy = function() {
-        this._destroy();
-        this.__postedItem = null;
-        if (this.lastItemModel)
-            this.lastItemModel.release();
-    };
-}
-
-
+/*
+__________      ____________________             
+___  ____/________  /___(_)_  /___(_)____________
+__  __/  __  __ \  __/_  /_  __/_  /_  _ \_  ___/
+_  /___  _  / / / /_ _  / / /_ _  / /  __/(__  ) 
+/_____/  /_/ /_/\__/ /_/  \__/ /_/  \___//____/  
+                                                 
+*/
 
 var __RAD_TO_DEGREES = 180 / Math.PI;
 
 function __radToDegrees(x) {
     return x * __RAD_TO_DEGREES;
 }
+
 function __degreesToRad(x) {
     return x / __RAD_TO_DEGREES;
 }
-
-// ------------------------------------------------------
-
-function AddonEntity(id, type) {
-    this.id = id;
-    this.type = type;
-
-    this.getCommandCondition = function() {
-        var position = EntityAPI.getPosition(this.id);
-        return "@e[x=" + position.x + ",y=" + position.y + ",z=" + position.z + ",r=0.0001]";
-    };
-
-    this.exec = function(command) {
-        return Commands.exec("execute " + this.getCommandCondition() + " ~ ~ ~ " + command);
-    };
-
-    this.execAt = function(command, x, y, z) {
-        return Commands.exec("execute " + this.getCommandCondition() + " " + x + " " + y + " " + z + " " + command);
-    };
-};
-
-var AddonEntityRegistry = {
-    data: {},
-    awaitCallback: null,
-    
-    spawn: function(x, y, z, nameID) {
-        var result = { entity: null };
-        this.awaitCallback = function(entity) {
-            result.entity = new AddonEntity(entity, nameID);
-            AddonEntityRegistry.data[result.entity] = result.entity;
-            return true;
-        };
-        Commands.exec("summon " + nameID + " " + x + " " + y + " " + z);
-        this.awaitCallback = null;
-        return result.entity;
-    },
-    getEntityData: function(entity) {
-        return this.data[entity] || null;
-    },
-
-    onEntityAdded: function(entity) {
-        if (this.awaitCallback && this.awaitCallback(entity))
-			this.awaitCallback = null;
-    }
-};
-
-Callback.addCallback("EntityAdded", function(entity) {
-    AddonEntityRegistry.onEntityAdded(entity);
-});
-
-// ------------------------------------------------------
 
 var EntityAPI = {};
 EntityAPI.getAll = function() {
@@ -5394,6 +3538,7 @@ EntityAPI.getAllInRange = function(coords, maxRange, type) {
 
 EntityAPI.getInventory = function(ent, handleNames, handleEnchant) {
     logDeprecation("Entity.getInventory");
+	return null;
 };
 EntityAPI.getArmorSlot = function(ent, slot) {
     return Entity.getArmorSlot(ent, slot);
@@ -5423,7 +3568,1971 @@ EntityAPI.getProjectileItem = function(projectile) {
     return Entity.getProjectileItem(projectile);
 };
 
+var PlayerAPI = {};
+PlayerAPI.get = function() {
+    return getPlayerEnt();
+};
+PlayerAPI.getNameForEnt = function(ent) {
+    return Player.getName(ent);
+};
+PlayerAPI.getName = function() {
+    return this.getNameForEnt(this.get());
+};
+PlayerAPI.getDimension = function() {
+    return Player.getDimension();
+};
+PlayerAPI.isPlayer = function(ent) {
+    return Player.isPlayer(ent);
+};
+PlayerAPI.getPointed = function() {
+    var pointedData = Player.getPointed();
+    var pos = pointedData.pos;
+    pointedData.block = WorldAPI.getBlock(pos.x, pos.y, pos.side);
+    return pointedData;
+};
 
+PlayerAPI.getInventory = function(loadPart, handleEnchant, handleNames) {
+    logDeprecation("Player.getInventory");
+	return null;
+};
+PlayerAPI.addItemToInventory = function(id, count, data, extra, preventDrop) {
+    Player.addItemInventory(id, count, data, preventDrop, extra);
+};
+PlayerAPI.getCarriedItem = function(handleEnchant, handleNames) {
+    return Player.getCarriedItem();
+};
+PlayerAPI.setCarriedItem = function(id, count, data, extra) {
+    return Player.setCarriedItem(id, count, data, extra);
+};
+PlayerAPI.getOffhandItem = function() {
+    return Player.getOffhandItem();
+};
+PlayerAPI.setOffhandItem = function(id, count, data, extra) {
+    return Player.setOffhandItem(id, count, data, extra);
+};
+PlayerAPI.decreaseCarriedItem = function(count) {
+    if (count == undefined) count = 1;
+    var carried = this.getCarriedItem(true, true);
+    this.setCarriedItem(carried.id, carried.count - count, carried.data, carried.enchant, carried.name);
+};
+PlayerAPI.getInventorySlot = function(slot) {
+    return Player.getInventorySlot(slot);
+};
+PlayerAPI.setInventorySlot = function(slot, id, count, data, extra) {
+    return Player.setInventorySlot(slot, id, count, data, extra);
+};
+PlayerAPI.getArmorSlot = function(slot) {
+    return Player.getArmorSlot(slot);
+};
+PlayerAPI.setArmorSlot = function(slot, id, count, data, extra) {
+    return Player.setArmorSlot(slot, id, count, data, extra);
+};
+PlayerAPI.getSelectedSlotId = function() {
+    return Player.getSelectedSlotId();
+};
+PlayerAPI.setSelectedSlotId = function(slot) {
+    return Player.setSelectedSlotId(slot);
+};
+
+PlayerAPI.setPosition = function(x, y, z) {
+    Entity.setPosition(getPlayerEnt(), x, y, z);
+};
+PlayerAPI.getPosition = function() {
+    var pos = Entity.getPosition(getPlayerEnt());
+    return { x: pos[0], y: pos[1], z: pos[2] };
+};
+PlayerAPI.addPosition = function(x, y, z) {
+    var pos = this.getPosition();
+    this.setPosition(pos.x + x, pos.y + y, pos.z + z);
+};
+
+PlayerAPI.setVelocity = function(x, y, z) {
+    Entity.setVelocity(getPlayerEnt(), x, y, z);
+};
+PlayerAPI.getVelocity = function() {
+    var vel = Entity.getVelocity(getPlayerEnt());
+    return { x: vel[0], y: vel[1], z: vel[2] };
+};
+PlayerAPI.addVelocity = function(x, y, z) {
+    var vel = this.getVelocity();
+    this.setVelocity(vel.x + x, vel.y + y, vel.z + z);
+};
+
+PlayerAPI.experience = function() {
+    return {
+		get: this.getExperience,
+		set: this.setExperience,
+		add: this.addExperience
+	};
+};
+PlayerAPI.getExperience = function() {
+    return Player.getExp();
+};
+PlayerAPI.setExperience = function(exp) {
+    Player.getExp(exp);
+};
+PlayerAPI.addExperience = function(exp) {
+    Player.addExp(exp);
+};
+
+PlayerAPI.level = function() {
+    return {
+		get: this.getLevel,
+		set: this.setLevel,
+		add: this.addLevel
+	};
+};
+PlayerAPI.getLevel = function() {
+    return Player.getLevel();
+};
+PlayerAPI.setLevel = function(level) {
+    Player.setLevel(level);
+};
+PlayerAPI.addLevel = function(level) {
+    this.setLevel(this.getLevel() + level);
+};
+
+PlayerAPI.flying = function() {
+    return {
+		set: this.setFlying,
+		get: this.getFlying,
+		getEnabled: this.getFlyingEnabled,
+		setEnabled: this.setFlyingEnabled
+	};
+};
+PlayerAPI.getFlyingEnabled = function() {
+    return Player.canFly();
+};
+PlayerAPI.setFlyingEnabled = function(enabled) {
+    Player.setCanFly(enabled);
+};
+PlayerAPI.getFlying = function() {
+    return Player.isFlying();
+};
+PlayerAPI.setFlying = function(enabled) {
+    Player.setFlying(enabled);
+};
+
+PlayerAPI.exhaustion = function() {
+    return {
+		get: this.getExhaustion,
+		set: this.setExhaustion
+	};
+};
+PlayerAPI.getExhaustion = function() {
+    return Player.getExhaustion();
+};
+PlayerAPI.setExhaustion = function(value) {
+    Player.setExhaustion(value);
+};
+
+PlayerAPI.hunger = function() {
+    return {
+		get: this.getHunger,
+		set: this.setHunger
+	};
+};
+PlayerAPI.getHunger = function() {
+    return Player.getHunger();
+};
+PlayerAPI.setHunger = function(value) {
+    Player.setHunger(value);
+};
+
+PlayerAPI.saturation = function() {
+    return {
+		get: this.getSaturation,
+		set: this.setSaturation
+	};
+};
+PlayerAPI.getSaturation = function() {
+    return Player.getSaturation();
+};
+PlayerAPI.setSaturation = function(value) {
+    Player.setSaturation(value);
+};
+
+PlayerAPI.health = function() {
+    return {
+		get: this.getHealth,
+		set: this.setHealth
+	};
+};
+PlayerAPI.getHealth = function() {
+    return Entity.getHealth(getPlayerEnt());
+};
+PlayerAPI.setHealth = function(value) {
+    Entity.setHealth(getPlayerEnt(), value);
+};
+
+PlayerAPI.score = function() {
+    return {
+		get: this.getScore
+	};
+};
+PlayerAPI.getScore = function() {
+    return Player.getScore();
+};
+
+
+
+/*
+________            _________                   
+___  __ \_________________  /___________________
+__  /_/ /  _ \_  __ \  __  /_  _ \_  ___/_  ___/
+_  _, _//  __/  / / / /_/ / /  __/  /   _(__  ) 
+/_/ |_| \___//_/ /_/\__,_/  \___//_/    /____/  
+                                                
+*/
+
+function Texture(path) {
+    this.path = path;
+    this.isAnimated = false;
+    this.animator = new AnimationHelper();
+    this.resolution = { w: 64, h: 32 };
+    this.setTexture = function(path) {
+        this.path = path;
+        this.isAnimated = false;
+        return this;
+    };
+    this.setResolution = function(w, h) {
+        h = h || w;
+        this.resolution.w = w;
+        this.resolution.h = h;
+        return this;
+    };
+    this.setAnimation = function(animation, delay) {
+        this.animator.setDelay(delay);
+        this.animator.setAnimation(animation);
+        this.isAnimated = true;
+        return this;
+    };
+    this.resetAnimation = function(token) {
+        this.animator.resetAnimation(token);
+        return this;
+    };
+    this.getTexture = function(token) {
+        if (!this.isAnimated) return this.path;
+		else return this.animator.getFrame(token);
+    };
+    this.getResolution = function() {
+        return {
+			w: this.resolution.w * this.pixelScale,
+			h: this.resolution.h * this.pixelScale
+		};
+    };
+    this.pixelScale = 1;
+    this.setPixelScale = function(scale) {
+        this.pixelScale = scale;
+        return this;
+    };
+}
+
+var ce_default_entity_texture = new Texture("images/mob/ce_default_entity_texture.png").setPixelScale(8);
+var ce_missing_entity_texture = new Texture("images/mob/ce_missing_entity_texture.png").setPixelScale(1);
+
+var EntityRenderGlobalCache = {};
+EntityRenderGlobalCache.globalCache = {};
+EntityRenderGlobalCache.saveRenderAPI = function(api, name, isLocal) {
+    var cache;
+    if (isLocal) cache = api.localCache;
+    else cache = this.globalCache;
+    cache[name] = api.toCache();
+};
+EntityRenderGlobalCache.loadRenderAPI = function(api, name, isLocal) {
+    var cache;
+    if (isLocal) cache = api.localCache;
+    else cache = this.globalCache;
+    if (cache[name]) {
+        api.fromCache(cache[name]);
+        return true;
+    }
+    return false;
+};
+
+function RenderAPI(params) {
+    this.getID = this.getId = this.getRenderType = function() {
+        return parseInt(this.renderId);
+    };
+    this.init = function(params) {
+        this.isEmpty = true;
+        this.isChangeable = true;
+        this.renderer = null;
+        this.model = null;
+        this.parts = {};
+        this.renderId = -1;
+        if (!params) params = {};
+        if (typeof (params) == "number") {
+            this.isChangeable = false;
+			this.renderId = params;
+            return;
+        }
+        if (typeof (params) == "string") {
+            this.loadInitialState(params);
+            return;
+        }
+        if (typeof (params) != "object") {
+            this.isChangeable = false;
+            return;
+        }
+        if (typeof (params.name) == "string") {
+            this.loadInitialState(params.name);
+            return;
+        }
+        if (parseInt(params.item)) {
+            this.isChangeable = false;
+            this.renderer = Renderer.createItemSpriteRenderer(parseInt(params.item));
+        } else {
+            var skin = params.skin || "textures/logo.png";
+            var scale = params.scale || 1;
+            this.isEmpty = !params.raw;
+            this.isChangeable = true;
+            this.renderer = Renderer.createRendererWithSkin(skin, scale);
+            this.renderId = this.renderer.getRenderType();
+            this.initModel();
+        }
+    };
+    this.initModel = function() {
+        this.model = this.renderer.getModel();
+        if (this.isEmpty) {
+            this.getPart("head").clear();
+            this.getPart("body").clear();
+            this.getPart("leftArm").clear();
+            this.getPart("rightArm").clear();
+            this.getPart("leftLeg").clear();
+            this.getPart("rightLeg").clear();
+        }
+        this.getPart("headwear").clear(); // backcomp
+    };
+    this.checkChangeable = function() {
+        if (!this.isChangeable) MCSystem.throwException("cannot modify render with id " + this.renderId + " it is not changeable (it is native mob renderer, item sprite or render failed to create).");
+    };
+    this.rebuild = function() {
+        this.model.reset();
+    };
+    this.getModel = function() {
+        this.checkChangeable();
+        return this.model;
+    };
+    this.getPart = function(name) {
+        this.checkChangeable();
+        var part = this.parts[name];
+        if (!part && this.model) {
+            part = this.model.getPart(name);
+            if (part) this.parts[name] = part;
+        }
+        return part;
+    };
+    this.addPart = function(name, params) {
+        var dot = name.lastIndexOf(".");
+        if (dot == -1) MCSystem.throwException("addPart got invalid part name, it must be formatted as parentPartName.newPartName");
+        var parentName = name.substring(0, dot);
+        var parentPart = this.getPart(parentName);
+        if (!parentPart) MCSystem.throwException("addPart got invalid parent part name " + parentName + ", such part does not exist (full name given is " + name + ")");
+        var part = parentPart.addPart(name);
+        this.parts[name] = part;
+        if (params) this.setPartParams(name, params);
+        return part;
+    };
+    this.setPartParams = function(name, params) {
+        var part = this.getPart(name);
+        if (!part) MCSystem.throwException("setPart got invalid part name " + name);
+        part.setTextureSize(params.width || 64, params.height || 32);
+        part.setTextureOffset(params.u || 0, params.v || 0);
+        if (params.pos) part.setOffset(params.pos.x || params.pos[0] || 0, params.pos.y
+		                                || params.pos[1] || 0, params.pos.z || params.pos[2] || 0);
+        if (params.rotation) part.setRotation(params.rotation.x || params.rotation[0] || 0, params.rotation.y
+		                                        || params.rotation[1] || 0, params.rotation.z || params.rotation[2] || 0);
+    };
+    this.setPart = function(name, data, params) {
+        var part = this.getPart(name);
+        if (!part) MCSystem.throwException("setPart got invalid part name " + name);
+        if (params) {
+            if (!params.add) part.clear();
+            this.setPartParams(name, params);
+        }
+        this._setPartRecursive(part, data, { x: 0, y: 0, z: 0 });
+        this.model.reset();
+    };
+    this._setPartRecursive = function(part, data, coords) {
+        for (var i in data) {
+            var element = data[i];
+            if (!element.coords) {
+                print("RenderAPI Error: some element in part " + part + " has no coords, aborting...");
+                Logger.Log("RenderAPI Error: some element in part " + part + " has no coords, aborting...", "ERROR");
+                continue;
+            }
+            var elementCoords = {x: parseFloat(element.coords.x) + parseFloat(coords.x), y: parseFloat(element.coords.y) + parseFloat(coords.y), z: parseFloat(element.coords.z) + parseFloat(coords.z)};
+            if (element.uv) part.setTextureOffset(element.uv.x, element.uv.y);
+            if (element.size) {
+                element.size.w = element.size.w || 0;
+                part.addBox(elementCoords.x - element.size.x * 0.5, elementCoords.y - element.size.y * 0.5, elementCoords.z - element.size.z * 0.5, element.size.x, element.size.y, element.size.z, element.size.w);
+            }
+            if (element.children) this._setPartRecursive(part, elementCoords, element.children);
+        }
+    };
+    this.localCache = {};
+    this.fromCache = function(data) {
+        this.renderer = data.renderer;
+        this.renderId = data.renderId;
+        this.model = data.model;
+        this.isChangeable = data.isChangeable;
+        this.parts = data.parts;
+    };
+    this.toCache = function() {
+        return {
+			renderer: this.renderer,
+			renderId: this.renderId,
+			model: this.model,
+			parts: this.parts,
+			isChangeable: this.isChangeable
+		};
+    };
+    this.saveState = function(name, isLocal) {
+        EntityRenderGlobalCache.saveRenderAPI(this, name, isLocal);
+    };
+    this.loadState = function(name, isLocal) {
+        return EntityRenderGlobalCache.loadRenderAPI(this, name, isLocal);
+    };
+    this.loadInitialState = function(name) {
+        if (!this.loadState(name)) MCSystem.throwException("cannot create Render object from saved state " + name + ", it does not exist");
+    };
+    this.saveToNext = function(name, isLocal) {
+        this.saveState(name), this.init(params);
+    };
+    this.init(params);
+    this.setTextureResolution = function() {
+        logDeprecation("RenderAPI.setTextureResolution");
+    };
+    this.transform = function() {
+        if (!this.renderer) MCSystem.throwException("cannot apply transformations for native renders or renders that weren't created properly");
+        return this.renderer.transform;
+    };
+}
+
+var BASIC_NULL_RENDER = new RenderAPI();
+var ce_default_entity_render = new RenderAPI();
+ce_default_entity_render.setPart("body", [{
+	type: "box", coords: { x: 0, y: 16, z: 0 },
+	uv: { x: 0, y: 0 }, size: { x: 16, y: 16, z: 16 }}], {});
+
+function ModelAPI(parentModel) {
+    this.applyTextureResolution = function() {
+        var resolution = this.getTextureResolution();
+        if (this.render) this.render.setTextureResolution(resolution.w, resolution.h);
+        for (var i in this.animator.animation)
+            this.animator.animation[i].setTextureResolution(resolution.w, resolution.h);
+        return this;
+    };
+    this.setTexture = function(textureObj) {
+        this.texture = textureObj || ce_missing_entity_texture;
+        return this;
+    };
+    this.getTextureObj = function() {
+        return this.texture;
+    };
+    this.getTexture = function() {
+        return this.texture.getTexture();
+    };
+    this.getTextureResolution = function() {
+        return this.texture.getResolution();
+    };
+    this.isAnimated = false;
+    this.animator = new AnimationHelper();
+    this.setRender = function(render) {
+        this.isAnimated = false;
+        this.render = render || ce_default_entity_render;
+        return this;
+    };
+    this.createAnimation = function(ticks, func, delay) {
+        this.animator.clearAnimation();
+        this.animator.setDelay(delay);
+        var last = this.render;
+        for (var tick = 0; tick < ticks; tick++) {
+            var render = func(tick, this);
+            if (render) {
+                this.animator.addFrame(render);
+                last = render;
+            } else this.animator.addFrame(last);
+        }
+        this.isAnimated = true;
+        return this;
+    };
+    this.resetAnimation = function(token) {
+        this.texture.resetAnimation(token);
+        this.animator.resetAnimation(token);
+    };
+    this.getTextureAndRender = function(token) {
+        var texture = this.texture.getTexture(token);
+        var render;
+        if (!this.isAnimated) render = this.render;
+		else render = this.animator.getFrame(token);
+        return { texture: texture, render: render.getID() };
+    };
+    if (parentModel) {
+        this.setTexture(parentModel.texture);
+        this.setRender(parentModel.render);
+        this.animator.inherit(parentModel.animator);
+        this.isAnimated = parentModel.isAnimated;
+    } else {
+        this.setTexture(null);
+        this.setRender(null);
+    }
+}
+
+var ce_default_entity_model = new ModelAPI().setTexture(ce_default_entity_texture);
+var ce_empty_entity_model = new ModelAPI().setRender(BASIC_NULL_RENDER);
+var ce_missing_entity_model = new ModelAPI();
+
+function ModelWatcher(entity, model) {
+    this._texture = null;
+    this._render = null;
+    this.model = model;
+    this.entity = entity;
+    this.token = AnimatorToken.genToken();
+    this.update = function() {
+        var current = this.model.getTextureAndRender(this.token);
+        if (current.texture != this._texture) {
+            this._texture = current.texture;
+            EntityAPI.setSkin(this.entity, this._texture);
+        }
+        if (current.render != this._render) {
+            this._render = current.render;
+            EntityAPI.setRender(this.entity, this._render);
+        }
+    };
+    this.resetAnimation = function() {
+        this.model.resetAnimation(this.token);
+    };
+    this.destroy = function() {
+        this.remove = true;
+    };
+}
+
+
+
+/*
+________      _____     ___________          _____ 
+____  _/________  /________  /__  /____________  /_
+ __  / __  __ \  __/  _ \_  /__  /_  _ \  ___/  __/
+__/ /  _  / / / /_ /  __/  / _  / /  __/ /__ / /_  
+/___/  /_/ /_/\__/ \___//_/  /_/  \___/\___/ \__/  
+                                                   
+*/
+
+function EntityAI(customPrototype) {
+    this.getDefaultPriority = function() {
+        return 1;
+    };
+    this.getDefaultName = function() {
+        return "basic-entity-ai";
+    };
+    this.params = {};
+    this.setParams = function(params) {
+        for (var name in params)
+            this.params[name] = params[name];
+    };
+    this.executionStarted = function() {};
+    this.executionEnded = function() {};
+    this.executionPaused = function() {};
+    this.executionResumed = function() {};
+    this.execute = function() {};
+    this.__execute = function() {
+        if (this.data.executionTimer > 0) {
+            this.data.executionTimer--;
+            if (this.data.executionTimer == 0) {
+                this.finishExecution();
+                return;
+            }
+        }
+        this.execute();
+    };
+    this.setExecutionTimer = function(timer) {
+        this.data.executionTimer = timer;
+    };
+    this.removeExecutionTimer = function() {
+        this.data.executionTimer = -1;
+    };
+    this.data = { executionTimer: -1 };
+    this.isInstance = false;
+    this.parent = null;
+    this.entity = null;
+    this.instantiate = function(parent, name) {
+        var instance = ModAPI.cloneObject(this, true);
+        instance.parent = parent;
+        instance.entity = parent.entity;
+        instance.controller = parent.AI;
+        instance.isInstance = true;
+        instance.executionName = name;
+        return instance;
+    };
+    this.aiEntityChanged = function(entity) {
+        this.entity = entity;
+    };
+    this.finishExecution = function() {
+        if (this.controller) this.controller.disableAI(this.executionName);
+    };
+    this.changeSelfPriority = function(priority) {
+        if (this.controller) this.controller.setPriority(this.executionName, priority);
+    };
+    this.enableAI = function(name, priority, extra) {
+        if (this.controller) this.controller.setPriority(name, priority, extra);
+    };
+    this.disableAI = function(name) {
+        if (this.controller) this.controller.setPriority(name);
+    };
+    this.setPriority = function(name, priority) {
+        if (this.controller) this.controller.setPriority(name, priority);
+    };
+    this.getAI = function(name) {
+        if (this.controller) return this.controller.getAI(name);
+    };
+    this.getPriority = function(name) {
+        if (this.controller) return this.controller.getPriority(name);
+    };
+    this.attackedBy = function(entity) {};
+    this.hurtBy = function(entity) {};
+    this.projectileHit = function(projectile) {};
+    this.death = function(entity) {};
+    for (var name in customPrototype) {
+        this[name] = customPrototype[name];
+    }
+}
+
+var EntityAIIdle = new EntityAI({
+	getDefaultPrioriy: function() {
+		return 1;
+	},
+	getDefaultName: function() {
+		return "idle";
+	}
+});
+
+function __normalizeAngle(x) {
+    while (x > Math.PI * 2) x -= Math.PI * 2;
+    while (x < 0) x += Math.PI * 2;
+    return x;
+}
+
+function __targetValue(x, val, speed) {
+    return x + Math.min(Math.max(-speed, val - x), speed);
+}
+
+function __targetAngle(angle, target, speed) {
+    angle = __normalizeAngle(angle);
+    target = __normalizeAngle(target);
+    if (target - Math.PI > angle) target -= Math.PI * 2;
+    if (angle - Math.PI > target) target += Math.PI * 2;
+    return __targetValue(angle, target, speed);
+}
+
+var EntityAIFollow = new EntityAI({
+	data: {
+		target: null,
+		targetEntity: null,
+		movingYaw: 0
+	},
+	params: {
+		speed: 0.2,
+		jumpVel: 0.45,
+		rotateSpeed: 0.4,
+		rotateRatio: 0.5,
+		rotateHead: true,
+		denyY: true
+	},
+	setParams: function(params) {
+		for (var name in params) {
+			this.params[name] = params[name];
+		}
+	},
+	execute: function() {
+		if (this.data.targetEntity) this.data.target = EntityAPI.getPosition(this.data.targetEntity);
+		if (this.data.target) {
+            var movingVec = EntityAPI.getMovingVector(this.entity);
+            var movingAngle = EntityAPI.getMovingAngle(this.entity).yaw;
+            var targetAngle = EntityAPI.getLookAt(this.entity, this.data.target.x, this.data.target.y, this.data.target.z).yaw;
+            var deltaAngle = movingAngle - targetAngle;
+            if (!this.data.movingYaw) this.data.movingYaw = targetAngle;
+            if (movingVec.xzsize < this.params.speed * 0.5)
+                this.data.movingYaw = __targetAngle(this.data.movingYaw, targetAngle + deltaAngle * 1.2, this.params.rotateSpeed);
+            this.data.movingYaw = __targetAngle(this.data.movingYaw, targetAngle, this.params.rotateSpeed * this.params.rotateRatio);
+            EntityAPI.moveToAngle(this.entity, {yaw: this.data.movingYaw, pitch: 0}, this.params);
+            if (this.params.rotateHead) EntityAPI.setLookAngle(this.entity, this.data.movingYaw, targetAngle.pitch);
+        }
+    }
+});
+
+var EntityAIPanic = new EntityAI({
+	getDefaultPriority: function() {
+		return 3;
+	},
+	getDefaultName: function() {
+		return "panic";
+	},
+	params: {
+		speed: 0.22,
+		angular_speed: 0.5
+	},
+	data: {
+		yaw: 0,
+		add: 0
+	},
+	setParams: function(params) {
+        for (var name in params)
+            this.params[name] = params[name];
+    },
+	randomize: function() {
+		if (Math.random() >= 0.5) this.data.add = 0;
+		else this.data.add = (Math.random() * -0.5) * this.params.angular_speed;
+	},
+	executionStarted: function() {
+		this.data.yaw = Math.random() * Math.PI * 2;
+		this.randomize();
+	},
+	execute: function() {
+		if (WorldAPI.getThreadTime() % 30 == 0) {
+			this.randomize();
+			EntityAPI.setLookAngle(this.entity, this.data.yaw, 0);
+		}
+		this.data.yaw += this.data.add;
+		EntityAPI.moveToLook(this.entity, {
+			speed: this.params.speed,
+			denyY: true,
+			jumpVel: 0.45
+		});
+	}
+});
+
+var EntityAIWander = new EntityAI({
+	getDefaultPriority: function() {
+		return 2;
+	},
+	getDefaultName: function() {
+		return "wander";
+	},
+	params: {
+		speed: 0.08,
+		angular_speed: 0.1,
+		delay_weight: 0.3
+	},
+	data: {
+		yaw: 0,
+		add: 0,
+		delay: false,
+		_delay: true
+	},
+	setParams: function(params) {
+		for (var name in params) this.params[name] = params[name];
+	},
+	randomize: function() {
+		if (Math.random() < this.params.delay_weight) this.data.delay = true;
+		else {
+			this.data.delay = false;
+			if (Math.random() >= 0.5) this.data.add = 0;
+            else this.data.add = (Math.random() * -0.5) * this.params.angular_speed;
+	    }
+	},
+	executionStarted: function() {
+		this.data.yaw = Math.random() * Math.PI * 2;
+		this.randomize();
+	},
+	execute: function() {
+		if (WorldAPI.getThreadTime() % 30 == 0) {
+			this.randomize();
+			EntityAPI.setLookAngle(this.entity, this.data.yaw, 0);
+		}
+		if (!this.data.delay) {
+			this.data.yaw += this.data.add;
+			EntityAPI.moveToLook(this.entity, {
+				speed: this.params.speed,
+				denyY: true,
+				jumpVel: this.data._delay ? 0 : 0.45
+			});
+		}
+		this.data._delay = this.data.delay;
+	}
+});
+
+var EntityAIAttack = new EntityAI({
+	params: {
+		attack_damage: 5,
+		attack_range: 2.5,
+		attack_rate: 12
+	},
+	data: {
+		timer: 0,
+		target: null
+	},
+	execute: function() {
+		if (this.data.target) {
+			if (EntityAPI.getDistanceToEntity(this.entity, this.data.target) < this.params.attack_range) {
+				if (this.data.timer-- < 0) {
+					this.data.timer = this.params.attack_rate;
+					EntityAPI.damageEntity(this.data.target, this.params.attack_damage);
+				}
+			} else this.data.timer = 0;
+		}
+	}
+});
+
+var EntityAISwim = new EntityAI({
+	getDefaultPriority: function() {
+		return -1;
+	},
+	getDefaultName: function() {
+		return "swim";
+	},
+	params: {
+		velocity: 0.2
+	},
+	inWater: false,
+	execute: function() {
+		if (WorldAPI.getThreadTime() % 5 == 0) {
+			var position = EntityAPI.getPosition(this.entity);
+			var tile = WorldAPI.getBlockID(position.x, position.y + 0.4, position.z);
+			this.inWater = (tile > 7 && tile < 12);
+		}
+		if (this.inWater) {
+			var velocity = EntityAPI.getVelocity(this.entity);
+			EntityAPI.setVelocity(this.entity, velocity.x, this.params.velocity, velocity.z);
+		}
+	}
+});
+
+function EntityAIWatcher(customPrototype) {
+    this.parent = EntityAI;
+    this.parent(customPrototype);
+    this.getDefaultPriority = function() {
+        return -1;
+    };
+    this.__execute = function() {
+        this.execute();
+    };
+}
+
+var EntityAIPanicWatcher = new EntityAIWatcher({
+	params: {
+		panic_time: 200,
+		priority_panic: 5,
+		priority_default: 1,
+		name: "panic"
+	},
+	data: {
+		timer: -1
+	},
+	hurtBy: function() {
+		this.setPriority(this.params.name, this.params.priority_panic);
+		this.data.timer = this.params.panic_time;
+	},
+	executionStarted: function() {
+		this.setPriority(this.params.name, this.params.priority_default);
+	},
+	execute: function() {
+		if (this.data.timer >= 0)
+			if (--this.data.timer == 0)
+				this.setPriority(this.params.name, this.params.priority_default);
+	}
+});
+
+
+
+/*
+_______       _____                  __________              
+___    |_________(_)______ _________ __  /___(_)____________ 
+__  /| |_  __ \_  /__  __ `__ \  __ `/  __/_  /_  __ \_  __ \
+_  ___ |  / / /  / _  / / / / / /_/ // /_ _  / / /_/ /  / / /
+/_/  |_/_/ /_//_/  /_/ /_/ /_/\__,_/ \__/ /_/  \____//_/ /_/ 
+                                                             
+*/
+
+var AnimatorToken = {};
+AnimatorToken.__current = 1;
+AnimatorToken.genToken = function() {
+    return this.__current++;
+};
+
+function AnimationHelper() {
+    this.animation = [];
+    this.animationDelay = 1;
+    this.animationOffsets = {0: 0};
+    this.getOffset = function(token) {
+        return this.animationOffsets[token || 0] || 0;
+    };
+    this.setOffset = function(token, offset) {
+        this.animationOffsets[token || 0] = offset;
+    };
+    this.getGlobalTime = function() {
+        return java.lang.System.currentTimeMillis() / 50;
+    };
+    this.getTime = function(token) {
+        return this.getGlobalTime() - this.getOffset(token);
+    };
+    this.resetAnimation = function(token) {
+        this.setOffset(token, this.getGlobalTime());
+    };
+    this.getFrameNumber = function(token) {
+        return parseInt(this.getTime(token) / this.animationDelay) % this.animation.length;
+    };
+    this.setDelay = function(delay) {
+        this.animationDelay = delay || 1;
+    };
+    this.setAnimation = function(arr) {
+        this.animation = arr;
+    };
+    this.clearAnimation = function() {
+        this.animation = [];
+    };
+    this.addFrame = function(frame) {
+        this.animation.push(frame);
+    };
+    this.getFrame = function(token) {
+        return this.animation[this.getFrameNumber(token)];
+    };
+    this.inherit = function(animator) {
+        this.clearAnimation();
+        this.setDelay(animator.animationDelay);
+        for (var i in animator.animation)
+            this.addFrame(animator.animation[i]);
+    };
+}
+
+var ANIMATION_BASE_ENTITY = 10;
+
+var AnimationRegistry = {};
+AnimationRegistry.animationList = [];
+AnimationRegistry.resetEngine = function() {
+    this.animationList = [];
+};
+AnimationRegistry.registerAnimation = function(anim) {
+    this.animationList.push(anim);
+};
+AnimationRegistry.getEntityArray = function() {
+    var entities = [];
+    try {
+        for (var i in this.animationList) {
+            var anim = this.animationList[i];
+            if (anim.entity && !anim.remove)
+                entities.push(parseInt(anim.entity));
+        }
+    } catch (e) {
+        Logger.Log("animation entities array is damaged (" + entities.length + " entities injected)", "ERROR");
+    }
+    return { entites: entities };
+};
+
+AnimationRegistry.onAttack = function(victim) {
+    for (var i in this.animationList) {
+        var anim = this.animationList[i];
+        if (anim.entity == victim && !anim.remove) {
+            preventDefault();
+            anim.onAttack();
+        }
+    }
+};
+
+Callback.addCallback("PlayerAttack", function(attacker, victim) {
+    AnimationRegistry.onAttack(victim);
+});
+
+function AnimationBase(x, y, z) {
+    this.render = null;
+    Saver.registerObject(this, nonSavesObjectSaver);
+    this.setPos = function(x, y, z) {
+        this.coords = { x: x, y: y, z: z };
+        if (this.render) this.render.setPos(x, y, z);
+    };
+    this.setInterpolationEnabled = function(enabled) {
+        if (this.render) this.render.setInterpolationEnabled(enabled);
+    };
+    this.setIgnoreBlocklight = function(ignore) {
+        if (this.render) this.render.setIgnoreBlocklight(ignore);
+    };
+    this.setBlockLightPos = function(x, y, z) {
+        if (this.render) this.render.setBlockLightPos(x, y, z);
+    };
+    this.resetBlockLightPos = function() {
+        if (this.render) this.render.resetBlockLightPos();
+    };
+    this.setSkylightMode = function() {
+        this.setBlockLightPos(this.coords.x, 256, this.coords.z);
+        this.setIgnoreBlocklight(false);
+    };
+    this.setBlocklightMode = function() {
+        this.resetBlockLightPos();
+        this.setIgnoreBlocklight(false);
+    };
+    this.setIgnoreLightMode = function() {
+        this.resetBlockLightPos();
+        this.setIgnoreBlocklight(true);
+    };
+    this.setPos(x, y, z);
+    this.description = {};
+    this.createRenderIfNeeded = function() {
+        if (!this.description) return;
+        if (!this.render) {
+            if (this.description.render)
+				this.render = StaticRenderer.createStaticRenderer(this.description.render,
+				                                this.coords.x, this.coords.y, this.coords.z);
+        }
+        if (this.render) {
+            if (this.description.skin)
+				this.render.setSkin(this.description.skin);
+            if (this.description.scale)
+				this.render.setScale(this.description.scale);
+            if (this.description.render)
+				this.render.setRenderer(this.description.render);
+        }
+    };
+    this.isLoaded = false;
+    this.updateRender = function() {
+        if (this.isLoaded)
+			this.createRenderIfNeeded();
+        else {
+            if (this.render) {
+                this.render.remove();
+                this.render = null;
+            }
+        }
+    };
+    this.load = function() {
+        this.remove = false;
+        this.isLoaded = true;
+        this.updateRender();
+    };
+    this.loadCustom = function(func) {
+        this.load();
+        this.update = func;
+        Updatable.addUpdatable(this);
+    };
+    this.getAge = function() {
+        return 0;
+    };
+    this.refresh = function() {
+        this.updateRender();
+    };
+    this.describe = function(description) {
+        for (var name in description)
+            this.description[name] = description[name];
+        this.updateRender();
+    };
+    this.getRenderAPI = function(base) {
+        if (!this.description.renderAPI)
+            this.description.renderAPI = new RenderAPI(base);
+        return this.description.renderAPI;
+    };
+    this.destroy = function() {
+        this.remove = true;
+        this.isLoaded = false;
+        this.updateRender();
+    };
+}
+
+var AnimationItemLoadHelper = {};
+AnimationItemLoadHelper.postedAnimations = [];
+AnimationItemLoadHelper.postRequired = true;
+AnimationItemLoadHelper.onLevelDisplayed = function() {
+	this.postRequired = false;
+	for (var i in this.postedAnimations) {
+		var anim = this.postedAnimations[i];
+		if (anim && anim.__postedItem)
+			anim.describeItem(anim.__postedItem);
+	}
+	this.postedAnimations = [];
+};
+
+AnimationItemLoadHelper.session = 1;
+AnimationItemLoadHelper.onLevelLeft = function() {
+	this.postRequired = true;
+	this.postedAnimations = [];
+	this.session++;
+};
+AnimationItemLoadHelper.handleItemDescribeRequest = function(anim, item) {
+	if (this.postRequired) {
+		if (anim.__session != this.session) {
+			anim.__session = this.session;
+			this.postedAnimations.push(anim);
+		}
+		anim.__postedItem = item;
+		return false;
+	} else return true;
+};
+
+Callback.addCallback("LevelDisplayed", function() {
+    AnimationItemLoadHelper.onLevelDisplayed();
+});
+
+Callback.addCallback("LevelLeft", function() {
+    AnimationItemLoadHelper.onLevelLeft();
+});
+
+var USE_ALTERNATIVE_ITEM_MODEL = false;
+
+function AnimationItem(x, y, z) {
+    this.parent = AnimationBase;
+    this.parent(x, y, z);
+    this.describeItemDefault = function(item) {
+        if (!AnimationItemLoadHelper.handleItemDescribeRequest(this, item))
+            return;
+        if (!item.size) item.size = 0.5;
+        var rotation = item.rotation;
+        if (!rotation || typeof (rotation) == "string") {
+            rotation = [0, 0, 0];
+            if (rotation == "x") rotation = [0, 0, Math.PI / 2];
+            if (rotation == "z") rotation = [Math.PI / 2, 0, 0];
+        }
+        var itemModel = Renderer.getItemModel(item.id, item.count, item.data, item.size, rotation[0], rotation[1], rotation[2], !item.notRandomize);
+        if (itemModel != null) {
+            itemModel.setFinalizeable(false);
+            this.describe({ render: itemModel.getRenderType() });
+        }
+        if (this.lastItemModel && this.lastItemModel != itemModel)
+            this.lastItemModel.release();
+        this.lastItemModel = itemModel;
+        return itemModel;
+    };
+    this.describeItemAlternative = function(item, offset) {
+        if (!item.size) item.size = 0.5;
+        var render = new RenderAPI({empty: true});
+        var stateName = "__item" + item.id + "|" + item.count + "|" + item.data + "|" + item.size + "|" + item.rotation + "|" + !item.notRandomize;
+        if (!offset) offset = { x: 0, y: 0, z: 0 };
+		else stateName += "|" + offset.x + "|" + offset.y + "|" + offset.z;
+        if (!render.loadState(stateName)) {
+            render.createBasicModel();
+            var model = [];
+            var size = parseInt(item.size * 16);
+            var addBox = function(z, rx, ry) {
+                model.push({
+					type: "box",
+					uv: { x: 0, y: 0 },
+					size: { x: size, y: size, z: 0 },
+					coords: { x: rx + offset.x * 16, y: 25 + ry - offset.y * 16, z: z - offset.z * 16 }
+				});
+            };
+            var fract = Math.min(64, size);
+            var width = size / 16;
+            for (var z = 0; z < item.count; z++) {
+                var randomX = 0, randomY = 0;
+                if (z > 0 && !item.notRandomize) {
+                    randomX = Math.random() * 5 - 2.5;
+                    randomY = Math.random() * 5 - 2.5;
+                }
+                for (var f = 0; f <= width; f += width / fract)
+                    addBox((z - 0.5 - item.count / 2) * width + f, randomX, randomY);
+            }
+            render.setPart("body", model, {width: size, height: size});
+            render.saveState(stateName);
+        }
+        this.describe({
+			renderAPI: render,
+			skin: ItemIconSource.getIconName(item.id, item.data)
+		});
+    };
+    this.describeItem = this.describeItemDefault;
+    this.tick = function() {};
+    
+    this.setItemRotation = function(x, y, z) {
+        if (this.__postedItem)
+            this.__postedItem.rotation = [x, y, z];
+        if (this.lastItemModel) {
+            var part = this.lastItemModel.getModel().getPart("item");
+            if (part) part.setRotation(x, y, z);
+        }
+    };
+
+    this.setItemSize = function(size) {
+        if (this.__postedItem) this.__postedItem.size = [x, y, z];
+        if (this.lastItemModel) this.lastItemModel.setScale(size);
+    };
+    
+    this.setItemSizeAndRotation = function(size, x, y, z) {
+        this.setItemSize(size);
+        this.setItemRotation(x, y, z);
+    };
+
+    this._destroy = this.destroy;
+    this.destroy = function() {
+        this._destroy();
+        this.__postedItem = null;
+        if (this.lastItemModel)
+            this.lastItemModel.release();
+    };
+}
+
+
+
+/*
+_________             _____                 __________      _______________         
+__  ____/___  __________  /_____________ ______  ____/________  /___(_)_  /_____  __
+_  /    _  / / /_  ___/  __/  __ \_  __ `__ \_  __/  __  __ \  __/_  /_  __/_  / / /
+/ /___  / /_/ /_(__  )/ /_ / /_/ /  / / / / /  /___  _  / / / /_ _  / / /_ _  /_/ / 
+\____/  \__,_/ /____/ \__/ \____//_/ /_/ /_//_____/  /_/ /_/\__/ /_/  \__/ _\__, /  
+                                                                           /____/   
+*/
+
+var CustomEntityConfig = {};
+CustomEntityConfig.unloaded_despawn_time_in_secs = 600;
+CustomEntityConfig.despawn_unloaded_entities =true;
+
+var ENTITY_UNLOAD_DISTANCE = 56;
+
+function CustomEntity(nameId) {
+    this.nameId = nameId;
+    this.controllers = {};
+    this.isInstance = false;
+    this.entity = null;
+    this.age = 0;
+    this.unloadedTime = 0;
+    this.realPosition = null;
+    this.__base_type = 28;
+    var self = this;
+    this.saverId = Saver.registerObjectSaver(this.nameId, {
+		read: function(obj) {
+			self.read(obj);
+			return null;
+		},
+		save: function(obj) {
+			return obj.save();
+		}
+	});
+    this.addController = function(name, basicPrototype) {
+        var controller = ModAPI.cloneObject(basicPrototype, true);
+        controller.parent = null;
+        controller.__controller_name = name;
+        this[name] = controller;
+        this.controllers[name] = controller;
+        return this;
+    };
+    this.customizeController = function(name, customPrototype) {
+        if (!this[name]) {
+            Logger.Log("Cannot customize entity controller " + name + ": no such defined", "ERROR");
+            return;
+        }
+        var customController = ModAPI.cloneObject(customPrototype, true);
+        var baseController = this[name];
+        for (var name in customController)
+            baseController[name] = customController[name];
+    };
+    this.customizeEvents = function(custom) {
+        this.customizeController("event", custom);
+    };
+    this.customizeDescription = function(custom) {
+        this.customizeController("description", custom);
+    };
+    this.customizeVisual = function(custom) {
+        this.customizeController("visual", custom);
+    };
+    this.customizeAI = function(custom) {
+        this.customizeController("AI", custom);
+    };
+    this.setBaseType = function(type) {
+        if (this.isInstance) {
+            Logger.Log("cannot set base entity type on entity in world", "ERROR");
+            return;
+        }
+        this.__base_type = type;
+    };
+    this.callControllerEvent = function() {
+        var event = arguments[0];
+        var params = [];
+        for (var i in arguments)
+            if (i > 0) params.push(arguments[i]);
+        for (var name in this.controllers) {
+            var controller = this.controllers[name];
+            if (controller[event]) controller[event].apply(controller, params);
+        }
+    };
+    this.setNativeEntity = function(entity) {
+        this.entity = parseInt(entity);
+        for (var name in this.controllers) {
+            var controller = this.controllers[name];
+            controller.entity = parseInt(entity);
+        }
+        this.callControllerEvent("nativeEntityChanged");
+    };
+    this.recreateEntity = function() {
+        if (this.realPosition) {
+            this.lockRemovalHook = true;
+            Entity.remove(this.entity);
+            this.lockRemovalHook = false;
+            this.setNativeEntity(Level.spawnMob(this.realPosition.x, this.realPosition.y, this.realPosition.z, this.__base_type));
+            if (!this.isLoaded) {
+                this.isLoaded = true;
+                this.callControllerEvent("loaded");
+            }
+        }
+    };
+    this.getPlayerDistance = function() {
+        var dx = getPlayerX() - this.realPosition.x;
+        var dz = getPlayerZ() - this.realPosition.z;
+        return Math.sqrt(dx * dx + dz * dz);
+    };
+    this.denyDespawn = function() {
+        this.isNaturalDespawnAllowed = false;
+        this.isDespawnDenied = true;
+    };
+    this.allowNaturalDespawn = function() {
+        this.isNaturalDespawnAllowed = true;
+        this.isDespawnDenied = false;
+    };
+    this.handleUnloadedState = function() {
+        this.unloadedTime++;
+        if (this.age % 200 == 0) {
+            if (!this.isDespawnDenied && CustomEntityConfig.despawn_unloaded_entities && this.unloadedTime > CustomEntityConfig.unloaded_despawn_time_in_secs) {
+                this.destroy();
+            } else {
+                if (this.getPlayerDistance() < ENTITY_UNLOAD_DISTANCE) {
+                    if (!this.isNaturalDespawnAllowed) {
+                        if (!this.isDestroyed) this.recreateEntity();
+                    } else this.destroy();
+                }
+            }
+        }
+    };
+    this.update = function() {
+        if (this.age % 20 == 0) {
+            var position = EntityAPI.getPosition(this.entity);
+            var isLoaded = position.y > 0;
+            if (isLoaded) this.realPosition = position;
+            if (this.isLoaded && !isLoaded)
+                this.callControllerEvent("unloaded");
+            if (!this.isLoaded && isLoaded)
+                this.callControllerEvent("loaded");
+            this.isLoaded = isLoaded;
+            if (isLoaded) this.unloadedTime = 0;
+            else this.handleUnloadedState();
+        }
+        if (this.isLoaded)
+            for (var name in this.controllers) 
+                this.controllers[name].update();
+        this.age++;
+    };
+    this.instantiate = function(entity) {
+        entity = parseInt(entity);
+        var instance = ModAPI.cloneObject(this, true);
+        instance.entity = entity;
+        instance.realPosition = EntityAPI.getPosition(entity);
+        instance.isInstance = true;
+        instance.isLoaded = false;
+        for (var name in instance.controllers) {
+            var controller = instance.controllers[name];
+            controller.parent = instance;
+            controller.entity = entity;
+            instance[name] = controller;
+        }
+        Saver.registerObject(instance, this.saverId);
+        MobRegistry.registerUpdatableAsEntity(instance);
+        Updatable.addUpdatable(instance);
+        return instance;
+    };
+    this.lockRemovalHook = false;
+    this.registerRemoval = function() {
+        if (this.lockRemovalHook) return;
+        this.isLoaded = false;
+        if (EntityAPI.getXZPlayerDis(this.entity) > ENTITY_UNLOAD_DISTANCE)
+            this.callControllerEvent("unloaded");
+        else this.destroy();
+    };
+    this.destroy = function() {
+        this.remove = this.isDestroyed = true;
+        this.callControllerEvent("removed");
+        Entity.remove(this.entity);
+        this.callControllerEvent("unloaded");
+    };
+    this.read = function(data) {
+        var instance;
+        if (this.isInstance) instance = this;
+		else instance = this.instantiate(data.entity);
+        instance.entity = data.entity || null;
+        instance.age = data.age || 0;
+        instance.unloadedTime = data.unloaded || 0;
+        instance.realPosition = data.rp || null;
+        for (var name in data.controllers) {
+            var controller = instance[name];
+            if (controller) {
+                controller.read(data.controllers[name]);
+                controller.entity = instance.entity;
+            } else Logger.Log("Entity controller is missing " + name + " while reading entity data", "WARNING");
+        }
+    };
+    this.save = function() {
+        var data = {
+			entity: parseInt(this.entity),
+			age: this.age,
+			oneAndHalf: 1.5,
+			unloaded: this.unloadedTime,
+			controllers: {}, 
+			rp: this.realPosition
+		};
+        for (var name in this.controllers)
+            data.controllers[name] = this.controllers[name].save(name);
+        return data;
+    };
+}
+
+// TODO: why it isn't availabled?
+// Callback.addCallback("CoreConfigured", function(config) {
+    // CustomEntityConfig = config.access("perfomance.entity");
+// });
+
+var MobRegistry = {};
+MobRegistry.customEntities = {};
+MobRegistry.loadedEntities = [];
+MobRegistry.registerEntity = function(name) {
+    var customEntityType = new CustomEntity(name);
+    customEntityType.addController("event", EntityEventController);
+    customEntityType.addController("description", EntityDescriptionController);
+    customEntityType.addController("visual", EntityVisualController);
+    customEntityType.addController("AI", EntityAIController);
+    this.customEntities[name] = customEntityType;
+    return customEntityType;
+};
+MobRegistry.registerUpdatableAsEntity = function(updatable) {
+    for (var i in this.loadedEntities) {
+        if (this.loadedEntities[i].entity == updatable.entity) {
+            Logger.Log("Dublicate entities updatables loaded for " + updatable.entity + ", removing second one", "WARNING");
+            updatable.remove = true;
+            return;
+        }
+    }
+    this.loadedEntities.push(updatable);
+};
+MobRegistry.spawnEntityAsPrototype = function(typeName, coords, extraData) {
+    var customEntityType = this.customEntities[typeName];
+    if (!customEntityType) Logger.Log("Cannot spawn custom entity: type " + typeName + "is not found", "ERROR");
+    var entity = Level.spawnMob(coords.x, coords.y, coords.z, customEntityType.__base_type);
+    var customEntity = customEntityType.instantiate(entity);
+    customEntity.callControllerEvent("created", extraData);
+    customEntity.update();
+    return customEntity;
+};
+MobRegistry.getEntityUpdatable = function(entity) {
+    entity = parseInt(entity);
+    for (var i in this.loadedEntities)
+        if (this.loadedEntities[i].entity == entity)
+            return this.loadedEntities[i];
+    return null;
+};
+MobRegistry.registerNativeEntity = function(entity) {
+	// TODO: make this function useful
+};
+MobRegistry.registerEntityRemove = function(entity) {
+    var updatable = this.getEntityUpdatable(entity);
+    if (updatable) updatable.registerRemoval();
+};
+MobRegistry.resetEngine = function() {
+    this.loadedEntities = [];
+};
+
+Callback.addCallback("LevelSelected", function() {
+    MobRegistry.resetEngine();
+});
+Callback.addCallback("EntityAdded", function(entity) {
+    MobRegistry.registerNativeEntity(entity);
+});
+Callback.addCallback("EntityRemoved", function(entity) {
+    MobRegistry.registerEntityRemove(entity);
+});
+Callback.addCallback("PlayerAttack", function(attacker, victim) {
+    var updatable = MobRegistry.getEntityUpdatable(victim);
+    if (updatable) updatable.callControllerEvent("attackedBy", attacker);
+});
+Callback.addCallback("EntityDeath", function(entity, attacker) {
+    var updatable = MobRegistry.getEntityUpdatable(entity);
+    if (updatable) updatable.callControllerEvent("death", attacker);
+});
+Callback.addCallback("EntityHurt", function(attacker, victim, damage) {
+    var updatable = MobRegistry.getEntityUpdatable(victim);
+    if (updatable) updatable.callControllerEvent("hurtBy", attacker, damage);
+});
+Callback.addCallback("ProjectileHitEntity", function(projectile, entity) {
+    var updatable = MobRegistry.getEntityUpdatable(entity);
+    if (updatable) updatable.callControllerEvent("projectileHit", projectile);
+});
+
+function AddonEntity(id, type) {
+    this.id = id;
+    this.type = type;
+
+    this.getCommandCondition = function() {
+        var position = EntityAPI.getPosition(this.id);
+        return "@e[x=" + position.x + ",y=" + position.y + ",z=" + position.z + ",r=0.0001]";
+    };
+
+    this.exec = function(command) {
+        return Commands.exec("execute " + this.getCommandCondition() + " ~ ~ ~ " + command);
+    };
+
+    this.execAt = function(command, x, y, z) {
+        return Commands.exec("execute " + this.getCommandCondition() + " " + x + " " + y + " " + z + " " + command);
+    };
+};
+
+var AddonEntityRegistry = {
+    data: {},
+    awaitCallback: null,
+    
+    spawn: function(x, y, z, nameID) {
+        var result = { entity: null };
+        this.awaitCallback = function(entity) {
+            result.entity = new AddonEntity(entity, nameID);
+            AddonEntityRegistry.data[result.entity] = result.entity;
+            return true;
+        };
+        Commands.exec("summon " + nameID + " " + x + " " + y + " " + z);
+        this.awaitCallback = null;
+        return result.entity;
+    },
+    getEntityData: function(entity) {
+        return this.data[entity] || null;
+    },
+
+    onEntityAdded: function(entity) {
+        if (this.awaitCallback && this.awaitCallback(entity))
+			this.awaitCallback = null;
+    }
+};
+
+Callback.addCallback("EntityAdded", function(entity) {
+    AddonEntityRegistry.onEntityAdded(entity);
+});
+
+
+
+/*
+_________            _____             ___________                   
+__  ____/______________  /________________  /__  /___________________
+_  /    _  __ \_  __ \  __/_  ___/  __ \_  /__  /_  _ \_  ___/_  ___/
+/ /___  / /_/ /  / / / /_ _  /   / /_/ /  / _  / /  __/  /   _(__  ) 
+\____/  \____//_/ /_/\__/ /_/    \____//_/  /_/  \___//_/    /____/  
+                                                                     
+*/
+
+var EntityAIController = {};
+EntityAIController.currentPriority = 0;
+EntityAIController.loadedAI = {};
+EntityAIController.loadedData = {};
+EntityAIController.isAILoaded = false;
+EntityAIController.getAITypes = function() {
+    return {
+		"main": {
+			type: EntityAIIdle
+		}
+	};
+};
+EntityAIController.loadEntityAI = function() {
+    var types = this.getAITypes();
+    this.loadedAI = {};
+    for (var name in types) {
+        var data = types[name];
+        var AI = data.type.instantiate(this.parent, name);
+        AI.setParams(data);
+        var enabled = data.enable == undefined ? true : data.enable;
+        this.loadedAI[name] = {
+			AI: AI,
+			priority: data.priority || AI.getDefaultPriority(),
+			enabled: enabled
+		};
+        if (enabled) AI.executionStarted();
+    }
+    for (var name in this.loadedData) {
+        var data = this.loadedData[name];
+        var ai = this.loadedAI[name];
+        if (ai) {
+            ai.priority = data.p;
+            ai.enabled = data.e;
+            ai.data = data.d || {};
+        }
+    }
+    this.refreshPriorities();
+};
+
+EntityAIController.loaded = function() {
+    if (!this.isAILoaded) {
+        this.loadEntityAI();
+        this.aiLoaded();
+        this.isAILoaded = true;
+    } else this.callAIevent("executionResumed");
+};
+EntityAIController.nativeEntityChanged = function() {
+    this.callAIevent("aiEntityChanged", this.parent.entity);
+};
+EntityAIController.unloaded = function() {
+    this.callAIevent("executionPaused");
+};
+EntityAIController.aiLoaded = function() {};
+
+EntityAIController.getAI = function(name) {
+    return this.loadedAI[name].AI;
+};
+EntityAIController.getPriority = function(name) {
+    return this.loadedAI[name].priority;
+};
+EntityAIController.enableAI = function(name, priority, extra) {
+    var data = this.loadedAI[name];
+    if (data) {
+        if (!data.enabled) {
+            data.enabled = true;
+            data.AI.executionStarted(extra);
+        }
+        this.setPriority(name, priority == undefined ? data.priority : priority);
+    }
+};
+EntityAIController.disableAI = function(name) {
+    var data = this.loadedAI[name];
+    if (data && data.enabled) {
+        data.enabled = false;
+        data.AI.executionEnded();
+        this.refreshPriorities();
+    }
+};
+EntityAIController.setPriority = function(name, priority) {
+    var data = this.loadedAI[name];
+    if (data && data.priority != priority) {
+        var isActive = data.priority == this.currentPriority;
+        data.priority = priority;
+        this.refreshPriorities();
+        if (isActive && data.priority != this.currentPriority)
+            data.AI.executionPaused();
+    }
+};
+EntityAIController.refreshPriorities = function() {
+    var maxPriority = -1;
+    for (var name in this.loadedAI) {
+        var data = this.loadedAI[name];
+        if (data.enabled && maxPriority < data.priority) {
+            maxPriority = data.priority;
+        }
+    }
+    if (maxPriority != this.currentPriority) {
+        for (var name in this.loadedAI) {
+            var data = this.loadedAI[name];
+            if (data.enabled) {
+                if (data.priority == maxPriority) data.AI.executionResumed();
+                if (data.priority == this.currentPriority) data.AI.executionPaused();
+            }
+        }
+    }
+    this.currentPriority = maxPriority;
+};
+
+EntityAIController.callAIevent = function(eventName, parameter, extra) {
+    for (var name in this.loadedAI) {
+        var data = this.loadedAI[name];
+        if (data.enabled) data.AI[eventName](parameter, extra);
+    }
+};
+EntityAIController.update = function() {
+    for (var name in this.loadedAI) {
+        var data = this.loadedAI[name];
+        if (data.enabled && (data.priority == this.currentPriority || data.priority == -1)) {
+            data.AI.__execute();
+        }
+    }
+    this.tick();
+};
+EntityAIController.save = function() {
+    var data = {};
+    for (var name in this.loadedAI) {
+        var ai = this.loadedAI[name];
+        data[name] = {
+			e: ai.enabled,
+			p: ai.priority,
+			d: ai.AI.data
+		};
+    }
+    return data;
+};
+EntityAIController.read = function(data) {
+    this.loadedData = data;
+};
+
+EntityAIController.tick = function() {};
+EntityAIController.attackedBy = function(attacker) {
+    this.callAIevent("attackedBy", attacker);
+};
+EntityAIController.hurtBy = function(attacker, damage) {
+    this.callAIevent("hurtBy", attacker, damage);
+};
+EntityAIController.death = function(attacker) {
+    this.callAIevent("death", attacker);
+};
+EntityAIController.projectileHit = function(projectile) {
+    this.callAIevent("projectileHit", projectile);
+};
+
+var EntityDescriptionController = {};
+EntityDescriptionController.isDynamic = false;
+EntityDescriptionController.getHitbox = function() {
+    return { w: 0.99, h: 0.99 };
+};
+EntityDescriptionController.getHealth = function() {
+    return 20;
+};
+EntityDescriptionController.getNameTag = function() {
+    return null;
+};
+EntityDescriptionController.getDrop = function(attacker) {
+    return [];
+};
+EntityDescriptionController.update = function() {};
+EntityDescriptionController.save = function() {};
+EntityDescriptionController.read = function() {};
+
+EntityDescriptionController.created = function() {
+    var health = this.getHealth();
+    Entity.setMaxHealth(this.entity, health);
+    Entity.setHealth(this.entity, health);
+};
+EntityDescriptionController.loaded = function() {
+    var health = this.getHealth();
+    Entity.setMaxHealth(this.entity, health);
+    var hitbox = this.getHitbox();
+    Entity.setCollisionSize(this.entity, hitbox.w || 0, hitbox.h || 0);
+    var nametag = this.getNameTag();
+    if (nametag) Entity.setNameTag(this.entity, nametag);
+    else Entity.setNameTag(this.entity, "");
+};
+EntityDescriptionController.unloaded = function() {};
+EntityDescriptionController.removed = function() {};
+
+EntityDescriptionController.getNumberFromData = function(data, defValue) {
+    if (!data) return defValue;
+    if (typeof (data) == "number") return data;
+    else {
+        if (data.min && data.max)
+            return parseInt((data.max - data.min + 1) * Math.random()) + data.min;
+        else if (!data.length) return defValue;
+		else return data[parseInt(data.length * Math.random())];
+    }
+};
+EntityDescriptionController.provideDrop = function(attacker) {
+    var drop = this.getDrop(attacker);
+    var pos = EntityAPI.getPosition(this.entity);
+    var dropItem = function(id, count, data, extra) {
+        EntityAPI.setVelocity(Level.dropItem(pos.x, pos.y + 0.3, pos.z, 0, id, count, data, extra),
+		                        Math.random() * 0.4 - 0.2, Math.random() * 0.3, Math.random() * 0.4 - 0.2);
+    };
+    for (var i in drop) {
+        var item = drop[i];
+        var chance = item.chance || 1;
+        if (item.id && Math.random() < chance) {
+            var count = this.getNumberFromData(item.count, 1);
+            var data = this.getNumberFromData(item.data, 0);
+            if (item.separate) {
+                for (var j = 0; j < count; j++)
+                    dropItem(item.id, 1, data);
+            } else dropItem(item.id, count, data, item.extra);
+        }
+    }
+};
+EntityDescriptionController.death = function(attacker) {
+    this.provideDrop(attacker);
+};
+
+var EntityVisualController = {};
+EntityVisualController.modelWatchers = {};
+EntityVisualController.modelWatcherStack = [];
+
+EntityVisualController.getModels = function() {
+    return {
+		"main": ce_default_entity_model
+	};
+};
+EntityVisualController.createModelWatchers = function() {
+    this.modelWatchers = {};
+    var models = this.getModels();
+    if (!models.main) models.main = ce_default_entity_model;
+    for (var name in models)
+        this.modelWatchers[name] = new ModelWatcher(this.entity, models[name]);
+};
+EntityVisualController.getModelWatcher = function(name) {
+    return this.modelWatchers[name];
+};
+EntityVisualController.setModel = function(name, ticks) {
+    var watcher = this.getModelWatcher(name);
+    if (!watcher) {
+        Logger.Log("cannot set entity model: no model watcher for '" + name + "' found.", "ERROR");
+        return;
+    }
+    if (!this.modelWatcherStack) this.modelWatcherStack = [];
+    if (ticks < 0) this.modelWatcherStack = [{ name: name, ticks: -1 }];
+	else this.modelWatcherStack.unshift({ name: name, ticks: ticks });
+    watcher.resetAnimation();
+};
+EntityVisualController.resetModel = function() {
+    this.modelWatcherStack = [];
+};
+EntityVisualController.resetAllAnimations = function() {
+    for (var name in this.modelWatchers)
+        this.modelWatchers[name].resetAnimation();
+};
+EntityVisualController.getCurrentModelName = function() {
+    var current = this.modelWatcherStack[0];
+    while (current && current.ticks == 0)
+        current = this.modelWatcherStack.shift();
+    return current || { name: "main", ticks: -1 };
+};
+
+EntityVisualController.loaded = function() {
+    this.createModelWatchers();
+};
+EntityVisualController.update = function() {
+    var current = this.getCurrentModelName();
+    var watcher = this.getModelWatcher(current.name);
+    if (watcher) watcher.update();
+    current.ticks--;
+};
+EntityVisualController.save = function() {
+    return this.modelWatcherStack;
+};
+EntityVisualController.read = function(data) {
+    this.modelWatcherStack = data || [];
+};
+
+var EntityEventController = {};
+EntityEventController.update = function() {
+    this.tick();
+};
+EntityEventController.save = function() {};
+EntityEventController.read = function() {};
+EntityEventController.tick = function() {};
+EntityEventController.removed = function() {};
+EntityEventController.created = function(extra) {};
+EntityEventController.loaded = function() {};
+EntityEventController.unloaded = function() {};
+EntityEventController.attackedBy = function(attacker) {};
+EntityEventController.hurtBy = function(attacker, damage) {};
+EntityEventController.death = function(attacker) {};
+EntityEventController.projectileHit = function(projectile) {};
+
+var ENTITY_MIN_SPAWN_DIS = 32;
+var ENTITY_MAX_SPAWN_DIS = 63;
+
+var EntitySpawnRegistry = {};
+EntitySpawnRegistry.spawnData = [];
+EntitySpawnRegistry.registerSpawn = function(entityType, rarity, condition, denyNaturalDespawn) {
+    if (!condition)
+        condition = function() {
+            return parseInt(Math.random() * 3 + 1);
+        };
+    this.spawnData.push({
+		type: entityType,
+		rarity: rarity,
+		condition: condition,
+		denyNaturalDespawn: denyNaturalDespawn
+	});
+};
+EntitySpawnRegistry.getRandomSpawn = function(rarityMultiplier) {
+    var spawn = this.spawnData[parseInt(Math.random() * this.spawnData.length)];
+    if (spawn) {
+        var chance = spawn.rarity * this.spawnData.length * rarityMultiplier;
+        if (Math.random() < chance) return spawn;
+    }
+};
+EntitySpawnRegistry.getRandPosition = function() {
+    var angle = Math.random() * Math.PI * 2;
+    var dist = Math.random() * (ENTITY_MAX_SPAWN_DIS - ENTITY_MIN_SPAWN_DIS) + ENTITY_MIN_SPAWN_DIS;
+    return { x: getPlayerX() + Math.sin(angle) * dist, z: getPlayerZ() + Math.cos(angle) * dist };
+};
+EntitySpawnRegistry.executeSpawn = function(spawn, position) {
+    position = position || this.getRandPosition();
+    var api = {
+		y: -1,
+		accessY: function() {
+			if (this.y == -1) this.y = WorldGenerationUtils.findLowSurface(position.x, position.z).y + 1;
+			return this.y;
+		},
+		condition: spawn.condition
+	};
+    var count = api.condition(position.x, position.z);
+    if (count > 0) {
+        position.y = api.accessY();
+        for (var i = 0; i < count; i++) {
+            var entity = EntityAPI.spawnCustomAtCoords(spawn.type, position);
+            entity.allowNaturalDespawn(!spawn.denyNaturalDespawn);
+            EntityAPI.setVelocity(entity.entity, Math.random() - 0.5, 0, Math.random() - 0.5);
+        }
+    }
+};
+
+EntitySpawnRegistry.counter = 0;
+EntitySpawnRegistry.tick = function() {
+    if (this.counter++ % 100 == 0) {
+        var spawn = this.getRandomSpawn(5 / 60);
+        if (spawn) this.executeSpawn(spawn);
+    }
+};
+EntitySpawnRegistry.onChunkGenerated = function(x, z) {
+    for (var i = 0; i < this.spawnData.length; i++) {
+        var position = {
+			x: (x + Math.random()) * 16,
+			z: (z + Math.random()) * 16
+		};
+        var spawn = this.getRandomSpawn(2 / this.spawnData.length);
+        if (spawn) this.executeSpawn(spawn, position);
+    }
+};
+
+Callback.addCallback("tick", function() {
+    EntitySpawnRegistry.tick();
+});
+Callback.addCallback("GenerateChunk", function(x, z) {
+    EntitySpawnRegistry.onChunkGenerated(x, z);
+});
+
+var EntityDataRegistry = {};
+EntityDataRegistry.isLevelLoaded = false;
+
+EntityDataRegistry.entityData = {};
+EntityDataRegistry.getAllData = function() {
+    return this.entityData;
+};
+EntityDataRegistry.resetEngine = function() {
+    this.entityData = {};
+    this.entityDataTyped = {};
+    this.delayedAddCallbacks = [];
+};
+EntityDataRegistry.getData = function(entity) {
+    return this.entityData[entity] || { type: 0, name: "none" };
+};
+EntityDataRegistry.getType = function(entity) {
+    return this.getData(entity).type;
+};
+
+EntityDataRegistry.entityDataTyped = {};
+EntityDataRegistry.getDataForType = function(type) {
+    if (!this.entityDataTyped[type])
+        this.entityDataTyped[type] = {};
+    return this.entityDataTyped[type];
+};
+EntityDataRegistry.entityAdded = function(entity) {
+    var type = Entity.getEntityTypeId(entity);
+    this.entityData[entity] = { type: type };
+    this.getDataForType(type)[entity] = entity;
+};
+EntityDataRegistry.entityRemoved = function(entity) {
+    var type = Entity.getEntityTypeId(entity);
+    delete this.entityData[entity];
+    delete this.getDataForType(type)[entity];
+};
+
+Callback.addCallback("EntityAdded", function(entity) {
+    EntityDataRegistry.entityAdded(entity);
+});
+Callback.addCallback("EntityRemoved", function(entity) {
+    EntityDataRegistry.entityRemoved(entity);
+});
+
+
+
+/*
+_____  __           ________      ______
+__  / / /______________  __/___  ____  /
+_  / / /__  ___/  _ \_  /_ _  / / /_  / 
+/ /_/ / _(__  )/  __/  __/ / /_/ /_  /  
+\____/  /____/ \___//_/    \__,_/ /_/   
+                                        
+*/
 
 var CONSTANT_REPLACEABLE_TILES = {
 	0: true,
@@ -5441,7 +5550,6 @@ function canTileBeReplaced(id, data) {
     if(id == 175 && (data % 8 == 2 || data % 8 == 3)) return true;
     return CONSTANT_REPLACEABLE_TILES[id] || false;
 }
-
 
 var CONSTANT_VANILLA_UI_TILES = {
 	23: true, // dispenser
@@ -5528,53 +5636,6 @@ Callback.addCallback("ItemUse", function(coords, item, block) {
     }
 });
 
-
-
-var EntityDataRegistry = {};
-EntityDataRegistry.isLevelLoaded = false;
-
-EntityDataRegistry.entityData = {};
-EntityDataRegistry.getAllData = function() {
-    return this.entityData;
-};
-EntityDataRegistry.resetEngine = function() {
-    this.entityData = {};
-    this.entityDataTyped = {};
-    this.delayedAddCallbacks = [];
-};
-EntityDataRegistry.getData = function(entity) {
-    return this.entityData[entity] || { type: 0, name: "none" };
-};
-EntityDataRegistry.getType = function(entity) {
-    return this.getData(entity).type;
-};
-
-EntityDataRegistry.entityDataTyped = {};
-EntityDataRegistry.getDataForType = function(type) {
-    if (!this.entityDataTyped[type])
-        this.entityDataTyped[type] = {};
-    return this.entityDataTyped[type];
-};
-EntityDataRegistry.entityAdded = function(entity) {
-    var type = Entity.getEntityTypeId(entity);
-    this.entityData[entity] = { type: type };
-    this.getDataForType(type)[entity] = entity;
-};
-EntityDataRegistry.entityRemoved = function(entity) {
-    var type = Entity.getEntityTypeId(entity);
-    delete this.entityData[entity];
-    delete this.getDataForType(type)[entity];
-};
-
-Callback.addCallback("EntityAdded", function(entity) {
-    EntityDataRegistry.entityAdded(entity);
-});
-Callback.addCallback("EntityRemoved", function(entity) {
-    EntityDataRegistry.entityRemoved(entity);
-});
-
-
-
 var ParticleAnimator = {};
 ParticleAnimator.addParticle = requireMethodFromNativeAPI("api.NativeAPI", "addParticle");
 ParticleAnimator.addFarParticle = requireMethodFromNativeAPI("api.NativeAPI", "addFarParticle");
@@ -5597,7 +5658,14 @@ ParticleAnimator.line = function(particle, coords1, coords2, gap, vel, data) {
 
 
 
-// ---- DIMENSIONS ----
+/*
+_____________                              _____                     
+___  __ \__(_)______ _________________________(_)____________________
+__  / / /_  /__  __ `__ \  _ \_  __ \_  ___/_  /_  __ \_  __ \_  ___/
+_  /_/ /_  / _  / / / / /  __/  / / /(__  )_  / / /_/ /  / / /(__  ) 
+/_____/ /_/  /_/ /_/ /_/\___//_/ /_//____/ /_/  \____//_/ /_//____/  
+                                                                     
+*/
 
 Dimensions._parsers = {};
 Dimensions._parsers.error = function(error, descr) {
@@ -5779,25 +5847,44 @@ Dimensions.newGenerator = function(description) {
 };
 
 
-// --------------------
+
+/*
+________                                                   
+___  __ \_____________________  ___________________________
+__  /_/ /  _ \_  ___/  __ \  / / /_  ___/  ___/  _ \_  ___/
+_  _, _//  __/(__  )/ /_/ / /_/ /_  /   / /__ /  __/(__  ) 
+/_/ |_| \___//____/ \____/\__,_/ /_/    \___/ \___//____/  
+                                                           
+*/
 
 var Resources = {};
 Resources.addRuntimePack = function(type, name) {
 	return MCSystem.addRuntimePack(type, name);
 };
 
-// --------------------
-
 Translation.addTranslation("Workbench", { ru: "Верстак" });
+// TODO: replace with uppercase symbolic
 Translation.addTranslation("off", { ru: "Выкл" });
 Translation.addTranslation("on", { ru: "Вкл" });
 Translation.addTranslation("yes", { ru: "Да" });
 Translation.addTranslation("no", { ru: "Нет" });
 Translation.addTranslation("mb", { ru: "мВ" });
+// TODO: alternative en/ru language: system.thread_stopped
 Translation.addTranslation("system.thread_stopped", {
 	en: "All mods are stopped because of\nfatal error on main thread.\nPlease re-enter the world.",
 	ru: "Работа модов приостановлена из-за ошибки,\nперезайдите в мир."
 });
+
+
+
+/*
+__________              _____             
+___  ____/_____________ ___(_)___________ 
+__  __/  __  __ \_  __ `/_  /__  __ \  _ \
+_  /___  _  / / /  /_/ /_  / _  / / /  __/
+/_____/  /_/ /_/_\__, / /_/  /_/ /_/\___/ 
+                /____/                    
+*/
 
 var CoreAPI = {};
 CoreAPI.getCoreAPILevel = function() {
@@ -5852,6 +5939,22 @@ CoreAPI.Debug.bitmap = function(bitmap, title) {
         builder.show();
     });
 };
+
+Callback.addCallback("NativeCommand", function(commandString) {
+    var command = commandString.split(" ");
+    if (command.shift() == "c") {
+        if (command[0] == "gm") {
+            var gm = parseInt(command[1]);
+            Level.setGameMode(gm);
+        }
+        if (command[0] == "give") {
+            var item = parseInt(command[1]) || 0;
+            var count = parseInt(command[1]) || 64;
+            var data = parseInt(command[1]) || 0;
+            Player.addItemInventory(item, count, data);
+        }
+    }
+});
 
 CoreAPI.FileTools = FileTools;
 CoreAPI.Threading = Threading;
@@ -5916,7 +6019,7 @@ CoreAPI.Liquid = CoreAPI.LiquidRegistry = LiquidRegistry;
 CoreAPI.BlockRenderer = BlockRenderer;
 CoreAPI.ICRender = ICRender;
 CoreAPI.Recipes = Recipes;
-CoreAPI.ToolAPI = ToolAPI;
+CoreAPI.ToolAPI = CoreAPI.Tool = ToolAPI;
 
 CoreAPI.Native = {};
 CoreAPI.Native.ArmorType = ArmorType;
@@ -5941,7 +6044,6 @@ function ResetInGameAPIs() {
     TileEntity.resetEngine();
     ToolAPI.resetEngine();
     EntityDataRegistry.resetEngine();
-    WorldGeneration.resetEngine();
     GameObjectRegistry.resetEngine();
 }
 
@@ -5952,19 +6054,3 @@ Callback.addCallback("LevelLeft", function() {
 function injectCoreAPI(scope) {
     for (var name in CoreAPI) scope[name] = CoreAPI[name];
 }
-
-Callback.addCallback("NativeCommand", function(commandString) {
-    var command = commandString.split(" ");
-    if (command.shift() == "c") {
-        if (command[0] == "gm") {
-            var gm = parseInt(command[1]);
-            Level.setGameMode(gm);
-        }
-        if (command[0] == "give") {
-            var item = parseInt(command[1]) || 0;
-            var count = parseInt(command[1]) || 64;
-            var data = parseInt(command[1]) || 0;
-            Player.addItemInventory(item, count, data);
-        }
-    }
-});
