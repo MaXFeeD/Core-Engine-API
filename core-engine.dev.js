@@ -1,20 +1,20 @@
-var CORE_ENGINE_VERSION = "2.1";
-var CORE_ENGINE_API_LEVEL = 11;
-var CORE_ENGINE_CONFIG_LOCK = 4;
+const CORE_ENGINE_VERSION = "2.1";
+const CORE_ENGINE_API_LEVEL = 11;
+const CORE_ENGINE_CONFIG_LOCK = 4;
 
-function getMcContext() {
+const getMcContext = function() {
     return MCSystem.getContext();
 }
 
-function getPlayerX() {
+const getPlayerX = function() {
     return Player.getX();
 }
 
-function getPlayerY() {
+const getPlayerY = function() {
     return Player.getY();
 }
 
-function getPlayerZ() {
+const getPlayerZ = function() {
     return Player.getZ();
 }
 
@@ -22,12 +22,12 @@ String.prototype.startsWith = function(str) {
     return (this.indexOf(str) == 0);
 };
 
-var nonSavesObjectSaver = Saver.registerObjectSaver("nonSavesObjectSaver", {
+const nonSavesObjectSaver = Saver.registerObjectSaver("nonSavesObjectSaver", {
 	read: function() { return null; },
 	save: function() { return null; }
 });
 
-var GuiUtils = {};
+const GuiUtils = {};
 GuiUtils.Run = function(func) {
 	MCSystem.runAsUi(function() {
 		try {
@@ -50,7 +50,7 @@ _  ___ / /_/ /__>  < _  / _  / _  / / /_/ /_  /   _  /_/ /
                                                   /____/   
 */
 
-var FileTools = {
+const FileTools = {
 	mntdir: "/mnt",
 	root: android.os.Environment.getExternalStorageDirectory()
 	                                .getAbsolutePath() + "/",
@@ -185,15 +185,12 @@ FileTools.WriteJSON = function(dir, obj, beautify) {
 
 FileTools.mkworkdirs();
 
-var Threading = {};
+const Threading = {};
 Threading.formatFatalErrorMessage = function(error, name, priority, formatFunc) {
     var paragraf = "Fatal error detected in thread " + name + ", all mods on this thread shutted down. Exit world safely and restart.\n\nКритическая ошибка в потоке " + name + ", все моды в этом потоке отключены. Для безопасного выхода сохраните мир и перезапуститесь.\n\n";
     paragraf += "CRASH INFO:\n";
-    if (formatFunc) {
-        paragraf += formatFunc(error, priority);
-    } else {
-        paragraf += "thread name: " + name + "\nthread priority:" + priority;
-    }
+    if (formatFunc) paragraf += formatFunc(error, priority);
+    else paragraf += "thread name: " + name + "\nthread priority:" + priority;
     paragraf += "\n\nERROR DETAILS: \n";
     paragraf += "mod: " + error.fileName + "\n";
     paragraf += "line: " + error.lineNumber + "\n";
@@ -239,7 +236,7 @@ _  /___  __>  < /  __/ /__ / /_/ // /_ / /_/ /_  /_/ /  / /  __/
                                                                 
 */
 
-var ModAPI = {};
+const ModAPI = {};
 ModAPI.modAPIs = {};
 ModAPI.registerAPI = function(name, api, descr) {
     if (!descr) descr = {};
@@ -349,7 +346,7 @@ ModAPI.debugCloneObject = function(source, deep, rec) {
     return cloned;
 };
 
-var SaverAPI = {};
+const SaverAPI = {};
 SaverAPI.addSavesScope = function(name, loadFunc, saveFunc) {
     return Saver.registerScopeSaver(name, { read: loadFunc, save: saveFunc });
 };
@@ -377,7 +374,7 @@ _  / __ _  __ `/_  __ `__ \  _ \  / / /_  __ \____  /_  _ \  ___/  __/
                                              /___/                    
 */
 
-function GameObject(name, Prototype) {
+const GameObject = function(name, Prototype) {
     this.originalName = this.gameobjectName = name;
     this.saverId = -1;
     if (this.gameobjectName) {
@@ -412,7 +409,7 @@ function GameObject(name, Prototype) {
     };
 }
 
-var GameObjectRegistry = {};
+const GameObjectRegistry = {};
 GameObjectRegistry.gameObjectTypes = {};
 GameObjectRegistry.genUniqueName = function(name) {
     name += "";
@@ -515,7 +512,7 @@ _  /   _  / _  / /  __/  /___  _  / / / /_ _  / / /_ _  /_/ /
                                                      /____/   
 */
 
-var TileEntityBasePrototype = {};
+const TileEntityBasePrototype = {};
 TileEntityBasePrototype.remove = false;
 TileEntityBasePrototype.isLoaded = false;
 TileEntityBasePrototype.__initialized = false;
@@ -564,9 +561,9 @@ TileEntityBasePrototype.selfDestroy = function() {
 };
 TileEntityBasePrototype.requireMoreLiquid = function(liquid, amount) {};
 
-var TILE_ENTITY_CHECKER_ITERATIONS = 10;
+const TILE_ENTITY_CHECKER_ITERATIONS = 10;
 
-var TileEntity = {};
+const TileEntity = {};
 TileEntity.tileEntityList = [];
 TileEntity.resetEngine = function() {
     this.tileEntityList = [];
@@ -757,7 +754,7 @@ _  / __ _  _ \_  __ \  _ \_  ___/  __ `/  __/_  /_  __ \_  __ \
                                                                
 */
 
-var WorldGeneration = {};
+const WorldGeneration = {};
 WorldGeneration.generatorUpdatable = null;
 WorldGeneration.checkTile = function(x, z) {
     var checkData = Level.getData(x, 0, z);
@@ -777,7 +774,7 @@ WorldGeneration.resetEngine = function() {
 };
 
 
-var WorldGenerationUtils = {};
+const WorldGenerationUtils = {};
 WorldGenerationUtils.isTerrainBlock = function(id) {
     return GenerationUtils.isTerrainBlock(id);
 };
@@ -840,6 +837,7 @@ WorldGenerationUtils.setLockedBlock = function(x, y, z) {
 };
 
 WorldGenerationUtils.genMinable = function(x, y, z, params) {
+	logDeprecation("GenerationUtils.genMinable");
     if (!params.ratio) params.ratio = 1;
     if (!params.amount) params.amount = params.size * params.ratio * 3;
     if (!params.amount) {
@@ -866,7 +864,7 @@ _  /_/ /_  / / /_/ / /__ _  ,<  _(__  )
                                         
 */
 
-var BLOCK_BASE_PROTOTYPE = {
+const BLOCK_BASE_PROTOTYPE = {
 	__validBlockTypes: {
 		createBlock: true,
 		createBlockWithRotation: true
@@ -953,7 +951,7 @@ BLOCK_BASE_PROTOTYPE.getDrop = null;
 BLOCK_BASE_PROTOTYPE.onPlaced = null;
 BLOCK_BASE_PROTOTYPE.onItemUsed = null;
 
-var BlockRegistry = {
+const BlockRegistry = {
 	TYPE_BASE: "createBlock",
 	TYPE_ROTATION: "createBlockWithRotation"
 };
@@ -1025,6 +1023,7 @@ BlockRegistry.createSpecialType = function(description, nameKey) {
     return Block.createSpecialType(nameKey, description);
 };
 BlockRegistry.setPrototype = function(namedID, Prototype) {
+	logDeprecation("Block.setPrototype");
     var numericID = IDRegistry.genBlockID(namedID);
     for (var name in BLOCK_BASE_PROTOTYPE)
         if (!Prototype[name])
@@ -1204,7 +1203,7 @@ __/ /  / /_ /  __/  / / / / /(__  )
                                     
 */
 
-var ITEM_BASE_PROTOTYPE = {
+const ITEM_BASE_PROTOTYPE = {
 	__validItemTypes: {
 		createItem: true,
 		createFoodItem: true,
@@ -1329,7 +1328,7 @@ ITEM_BASE_PROTOTYPE.onUsed = function(coords, item, block) {};
 ITEM_BASE_PROTOTYPE.onTick = function(item) {};
 ITEM_BASE_PROTOTYPE.onThrowableImpact = function(projectile, item, target) {};
 
-var ItemRegistry = {
+const ItemRegistry = {
 	TYPE_BASE: "createItem",
 	TYPE_FOOD: "createFoodItem",
 	TYPE_ARMOR: "createArmorItem",
@@ -1459,6 +1458,7 @@ ItemRegistry.addCreativeGroup = function(name, displayedName, ids) {
     for (var i in ids) Item.addToCreativeGroup(name, displayedName, ids[i]);
 };
 ItemRegistry.describeItem = function(numericID, description) {
+	logDeprecation("Item.describeItem");
     this.setCategory(numericID, description.category || 0);
     this.setToolRender(numericID, description.toolRender);
     this.setMaxDamage(numericID, description.maxDamage || 0);
@@ -1494,7 +1494,7 @@ ItemRegistry.setLiquidClip = function(id, enabled) {
     this.getItemById(id).setLiquidClip(enabled);
 };
 ItemRegistry.setStackedByData = function(id, enabled) {
-	logDeprecation("ItemRegistry.setStackedByData");
+	logDeprecation("Item.setStackedByData");
 };
 ItemRegistry.setProperties = function(id, props) {
     this.getItemById(id).setProperties(props);
@@ -1602,6 +1602,7 @@ ItemRegistry.onUsingComplete = function(item) {
 
 ItemRegistry.dispenseFunctions = {};
 ItemRegistry.registerDispenseFunction = function(namedID, func) {
+	logDeprecation("Item.registerDispenseFunction");
     var numericID = this.getNumericId(namedID);
     if (numericID == -1) return false;
     this.dispenseFunctions[numericID] = func;
@@ -1659,19 +1660,20 @@ _  /   / /_/ / /_/ /  / _(__  )
                                 
 */
 
-var ArmorRegistry = {};
+const ArmorRegistry = {};
 ArmorRegistry.registerFuncs = function(id, funcs) {
     var id = ItemRegistry.getNumericId(id);
     if (id == -1) return;
     Armor.registerCallbacks(id, funcs);
 };
 ArmorRegistry.preventDamaging = function(id) {
+	logDeprecation("Armor.preventDamaging");
     var id = ItemRegistry.getNumericId(id);
     if (id == -1) return;
     Armor.preventDamaging(id);
 };
 
-var ToolAPI = {};
+const ToolAPI = {};
 ToolAPI.needDamagableItemFix = false;
 
 ToolAPI.blockMaterials = {};
@@ -1736,7 +1738,9 @@ ToolAPI.registerBlockMaterialAsArray = function(materialName, UIDs, isNative) {
     for (var i in UIDs) this.registerBlockMaterial(UIDs[i], materialName, 0, isNative);
 };
 
-ToolAPI.refresh = function() {};
+ToolAPI.refresh = function() {
+	logDeprecation("Tool.refresh");
+};
 ToolAPI.getBlockData = function(blockID) {
     return this.blockData[blockID];
 };
@@ -2636,7 +2640,7 @@ _  /___  / / /_/ // /_/ /_  / / /_/ / _(__  )
              /_/                              
 */
 
-var LiquidRegistry = {};
+const LiquidRegistry = {};
 LiquidRegistry.liquidStorageSaverId = Saver.registerObjectSaver("_liquidStorage", {
 	read: function(obj) {
         var storage = new LiquidRegistry.Storage();
@@ -2870,7 +2874,7 @@ ____/|__/  \____//_/    /_/  \__,_/
                                       
 */
 
-var GameAPI = {};
+const GameAPI = {};
 GameAPI.spendItemsInCreative = false;
 GameAPI.isDeveloperMode = false;
 GameAPI.prevent = function() {
@@ -2926,12 +2930,12 @@ Callback.addCallback("CoreConfigured", function(config) {
     GameAPI.isDeveloperMode = GameAPI.spendItemsInCreative = config.getBool("developer_mode");
 });
 
-var NativeAPI_setTile = requireMethodFromNativeAPI("api.NativeAPI", "setTile");
-var NativeAPI_getTileAndData = requireMethodFromNativeAPI("api.NativeAPI", "getTileAndData");
-var NativeAPI_getTile = requireMethodFromNativeAPI("api.NativeAPI", "getTile");
-var NativeAPI_getData = requireMethodFromNativeAPI("api.NativeAPI", "getData");
+const NativeAPI_setTile = requireMethodFromNativeAPI("api.NativeAPI", "setTile");
+const NativeAPI_getTileAndData = requireMethodFromNativeAPI("api.NativeAPI", "getTileAndData");
+const NativeAPI_getTile = requireMethodFromNativeAPI("api.NativeAPI", "getTile");
+const NativeAPI_getData = requireMethodFromNativeAPI("api.NativeAPI", "getData");
 
-var WorldAPI = {};
+const WorldAPI = {};
 WorldAPI.isLoaded = false;
 WorldAPI.setLoaded = function(isLoaded) {
     this.isLoaded = isLoaded;
@@ -3195,21 +3199,22 @@ _  /___  _  / / / /_ _  / / /_ _  / /  __/(__  )
                                                  
 */
 
-var __RAD_TO_DEGREES = 180 / Math.PI;
+const __RAD_TO_DEGREES = 180 / Math.PI;
 
-function __radToDegrees(x) {
+const __radToDegrees = function(x) {
     return x * __RAD_TO_DEGREES;
 }
 
-function __degreesToRad(x) {
+const __degreesToRad = function(x) {
     return x / __RAD_TO_DEGREES;
 }
 
-var EntityAPI = {};
+const EntityAPI = {};
 EntityAPI.getAll = function() {
     return Entity.getAll();
 };
 EntityAPI.getAllJS = function() {
+	logDeprecation("Entity.getAllJS");
     return Entity.getAll();
 };
 EntityAPI.getExtra = function(ent, name) {
@@ -3295,12 +3300,15 @@ EntityAPI.getCustom = function(entity) {
     return MobRegistry.getEntityUpdatable(entity);
 };
 EntityAPI.getAge = function(ent) {
+	logDeprecation("Entity.getAge");
     return Entity.getAnimalAge(ent);
 };
 EntityAPI.setAge = function(ent, age) {
+	logDeprecation("Entity.setAge");
     return Entity.setAnimalAge(ent, age);
 };
 EntityAPI.getSkin = function(ent) {
+	logDeprecation("Entity.getSkin");
     return Entity.getMobSkin(ent);
 };
 EntityAPI.setSkin = function(ent, skin) {
@@ -3325,9 +3333,11 @@ EntityAPI.setNameTag = function(ent, tag) {
     return Entity.setNameTag(ent, tag);
 };
 EntityAPI.getTarget = function(ent) {
+	logDeprecation("Entity.getTarget");
     return Entity.getTarget(ent);
 };
 EntityAPI.setTarget = function(ent, target) {
+	logDeprecation("Entity.setTarget");
     return Entity.setTarget(ent, target);
 };
 EntityAPI.getMobile = function(ent, mobile) {
@@ -3353,6 +3363,7 @@ EntityAPI.setFire = function(ent, fire, force) {
 };
 
 EntityAPI.health = function(entity) {
+	logDeprecation("Entity.health");
     return {
 		get: function() {
 			return EntityAPI.getHealth(entity);
@@ -3538,7 +3549,6 @@ EntityAPI.getAllInRange = function(coords, maxRange, type) {
 
 EntityAPI.getInventory = function(ent, handleNames, handleEnchant) {
     logDeprecation("Entity.getInventory");
-	return null;
 };
 EntityAPI.getArmorSlot = function(ent, slot) {
     return Entity.getArmorSlot(ent, slot);
@@ -3565,17 +3575,20 @@ EntityAPI.setDroppedItem = function(ent, id, count, data, extra) {
     return Entity.setDroppedItem(ent, id, count, data, extra);
 };
 EntityAPI.getProjectileItem = function(projectile) {
+	logDeprecation("Entity.getProjectileItem");
     return Entity.getProjectileItem(projectile);
 };
 
-var PlayerAPI = {};
+const PlayerAPI = {};
 PlayerAPI.get = function() {
     return getPlayerEnt();
 };
 PlayerAPI.getNameForEnt = function(ent) {
+	logDeprecation("Player.getNameForEnt");
     return Player.getName(ent);
 };
 PlayerAPI.getName = function() {
+	logDeprecation("Player.getName");
     return this.getNameForEnt(this.get());
 };
 PlayerAPI.getDimension = function() {
@@ -3593,7 +3606,6 @@ PlayerAPI.getPointed = function() {
 
 PlayerAPI.getInventory = function(loadPart, handleEnchant, handleNames) {
     logDeprecation("Player.getInventory");
-	return null;
 };
 PlayerAPI.addItemToInventory = function(id, count, data, extra, preventDrop) {
     Player.addItemInventory(id, count, data, preventDrop, extra);
@@ -3659,6 +3671,7 @@ PlayerAPI.addVelocity = function(x, y, z) {
 };
 
 PlayerAPI.experience = function() {
+	logDeprecation("Player.experience");
     return {
 		get: this.getExperience,
 		set: this.setExperience,
@@ -3676,6 +3689,7 @@ PlayerAPI.addExperience = function(exp) {
 };
 
 PlayerAPI.level = function() {
+	logDeprecation("Player.level");
     return {
 		get: this.getLevel,
 		set: this.setLevel,
@@ -3693,6 +3707,7 @@ PlayerAPI.addLevel = function(level) {
 };
 
 PlayerAPI.flying = function() {
+	logDeprecation("Player.flying");
     return {
 		set: this.setFlying,
 		get: this.getFlying,
@@ -3714,6 +3729,7 @@ PlayerAPI.setFlying = function(enabled) {
 };
 
 PlayerAPI.exhaustion = function() {
+	logDeprecation("Player.exhaustion");
     return {
 		get: this.getExhaustion,
 		set: this.setExhaustion
@@ -3727,6 +3743,7 @@ PlayerAPI.setExhaustion = function(value) {
 };
 
 PlayerAPI.hunger = function() {
+	logDeprecation("Player.hunger");
     return {
 		get: this.getHunger,
 		set: this.setHunger
@@ -3740,6 +3757,7 @@ PlayerAPI.setHunger = function(value) {
 };
 
 PlayerAPI.saturation = function() {
+	logDeprecation("Player.saturation");
     return {
 		get: this.getSaturation,
 		set: this.setSaturation
@@ -3753,6 +3771,7 @@ PlayerAPI.setSaturation = function(value) {
 };
 
 PlayerAPI.health = function() {
+	logDeprecation("Player.health");
     return {
 		get: this.getHealth,
 		set: this.setHealth
@@ -3766,6 +3785,7 @@ PlayerAPI.setHealth = function(value) {
 };
 
 PlayerAPI.score = function() {
+	logDeprecation("Player.score");
     return {
 		get: this.getScore
 	};
@@ -3785,7 +3805,7 @@ _  _, _//  __/  / / / /_/ / /  __/  /   _(__  )
                                                 
 */
 
-function Texture(path) {
+const Texture = function(path) {
     this.path = path;
     this.isAnimated = false;
     this.animator = new AnimationHelper();
@@ -3828,10 +3848,10 @@ function Texture(path) {
     };
 }
 
-var ce_default_entity_texture = new Texture("images/mob/ce_default_entity_texture.png").setPixelScale(8);
-var ce_missing_entity_texture = new Texture("images/mob/ce_missing_entity_texture.png").setPixelScale(1);
+const ce_default_entity_texture = new Texture("images/mob/ce_default_entity_texture.png").setPixelScale(8);
+const ce_missing_entity_texture = new Texture("images/mob/ce_missing_entity_texture.png").setPixelScale(1);
 
-var EntityRenderGlobalCache = {};
+const EntityRenderGlobalCache = {};
 EntityRenderGlobalCache.globalCache = {};
 EntityRenderGlobalCache.saveRenderAPI = function(api, name, isLocal) {
     var cache;
@@ -3850,7 +3870,7 @@ EntityRenderGlobalCache.loadRenderAPI = function(api, name, isLocal) {
     return false;
 };
 
-function RenderAPI(params) {
+const RenderAPI = function(params) {
     this.getID = this.getId = this.getRenderType = function() {
         return parseInt(this.renderId);
     };
@@ -4010,13 +4030,13 @@ function RenderAPI(params) {
     };
 }
 
-var BASIC_NULL_RENDER = new RenderAPI();
-var ce_default_entity_render = new RenderAPI();
+const BASIC_NULL_RENDER = new RenderAPI();
+const ce_default_entity_render = new RenderAPI();
 ce_default_entity_render.setPart("body", [{
 	type: "box", coords: { x: 0, y: 16, z: 0 },
 	uv: { x: 0, y: 0 }, size: { x: 16, y: 16, z: 16 }}], {});
 
-function ModelAPI(parentModel) {
+const ModelAPI = function(parentModel) {
     this.applyTextureResolution = function() {
         var resolution = this.getTextureResolution();
         if (this.render) this.render.setTextureResolution(resolution.w, resolution.h);
@@ -4080,11 +4100,11 @@ function ModelAPI(parentModel) {
     }
 }
 
-var ce_default_entity_model = new ModelAPI().setTexture(ce_default_entity_texture);
-var ce_empty_entity_model = new ModelAPI().setRender(BASIC_NULL_RENDER);
-var ce_missing_entity_model = new ModelAPI();
+const ce_default_entity_model = new ModelAPI().setTexture(ce_default_entity_texture);
+const ce_empty_entity_model = new ModelAPI().setRender(BASIC_NULL_RENDER);
+const ce_missing_entity_model = new ModelAPI();
 
-function ModelWatcher(entity, model) {
+const ModelWatcher = function(entity, model) {
     this._texture = null;
     this._render = null;
     this.model = model;
@@ -4120,7 +4140,7 @@ __/ /  _  / / / /_ /  __/  / _  / /  __/ /__ / /_
                                                    
 */
 
-function EntityAI(customPrototype) {
+const EntityAI = function(customPrototype) {
     this.getDefaultPriority = function() {
         return 1;
     };
@@ -4199,7 +4219,7 @@ function EntityAI(customPrototype) {
     }
 }
 
-var EntityAIIdle = new EntityAI({
+const EntityAIIdle = new EntityAI({
 	getDefaultPrioriy: function() {
 		return 1;
 	},
@@ -4208,17 +4228,17 @@ var EntityAIIdle = new EntityAI({
 	}
 });
 
-function __normalizeAngle(x) {
+const __normalizeAngle = function(x) {
     while (x > Math.PI * 2) x -= Math.PI * 2;
     while (x < 0) x += Math.PI * 2;
     return x;
 }
 
-function __targetValue(x, val, speed) {
+const __targetValue = function(x, val, speed) {
     return x + Math.min(Math.max(-speed, val - x), speed);
 }
 
-function __targetAngle(angle, target, speed) {
+const __targetAngle = function(angle, target, speed) {
     angle = __normalizeAngle(angle);
     target = __normalizeAngle(target);
     if (target - Math.PI > angle) target -= Math.PI * 2;
@@ -4226,7 +4246,7 @@ function __targetAngle(angle, target, speed) {
     return __targetValue(angle, target, speed);
 }
 
-var EntityAIFollow = new EntityAI({
+const EntityAIFollow = new EntityAI({
 	data: {
 		target: null,
 		targetEntity: null,
@@ -4262,7 +4282,7 @@ var EntityAIFollow = new EntityAI({
     }
 });
 
-var EntityAIPanic = new EntityAI({
+const EntityAIPanic = new EntityAI({
 	getDefaultPriority: function() {
 		return 3;
 	},
@@ -4303,7 +4323,7 @@ var EntityAIPanic = new EntityAI({
 	}
 });
 
-var EntityAIWander = new EntityAI({
+const EntityAIWander = new EntityAI({
 	getDefaultPriority: function() {
 		return 2;
 	},
@@ -4353,7 +4373,7 @@ var EntityAIWander = new EntityAI({
 	}
 });
 
-var EntityAIAttack = new EntityAI({
+const EntityAIAttack = new EntityAI({
 	params: {
 		attack_damage: 5,
 		attack_range: 2.5,
@@ -4375,7 +4395,7 @@ var EntityAIAttack = new EntityAI({
 	}
 });
 
-var EntityAISwim = new EntityAI({
+const EntityAISwim = new EntityAI({
 	getDefaultPriority: function() {
 		return -1;
 	},
@@ -4399,7 +4419,7 @@ var EntityAISwim = new EntityAI({
 	}
 });
 
-function EntityAIWatcher(customPrototype) {
+const EntityAIWatcher = function(customPrototype) {
     this.parent = EntityAI;
     this.parent(customPrototype);
     this.getDefaultPriority = function() {
@@ -4410,7 +4430,7 @@ function EntityAIWatcher(customPrototype) {
     };
 }
 
-var EntityAIPanicWatcher = new EntityAIWatcher({
+const EntityAIPanicWatcher = new EntityAIWatcher({
 	params: {
 		panic_time: 200,
 		priority_panic: 5,
@@ -4445,13 +4465,13 @@ _  ___ |  / / /  / _  / / / / / /_/ // /_ _  / / /_/ /  / / /
                                                              
 */
 
-var AnimatorToken = {};
+const AnimatorToken = {};
 AnimatorToken.__current = 1;
 AnimatorToken.genToken = function() {
     return this.__current++;
 };
 
-function AnimationHelper() {
+const AnimationHelper = function() {
     this.animation = [];
     this.animationDelay = 1;
     this.animationOffsets = {0: 0};
@@ -4496,9 +4516,9 @@ function AnimationHelper() {
     };
 }
 
-var ANIMATION_BASE_ENTITY = 10;
+const ANIMATION_BASE_ENTITY = 10;
 
-var AnimationRegistry = {};
+const AnimationRegistry = {};
 AnimationRegistry.animationList = [];
 AnimationRegistry.resetEngine = function() {
     this.animationList = [];
@@ -4534,7 +4554,7 @@ Callback.addCallback("PlayerAttack", function(attacker, victim) {
     AnimationRegistry.onAttack(victim);
 });
 
-function AnimationBase(x, y, z) {
+const AnimationBase = function(x, y, z) {
     this.render = null;
     Saver.registerObject(this, nonSavesObjectSaver);
     this.setPos = function(x, y, z) {
@@ -4627,7 +4647,7 @@ function AnimationBase(x, y, z) {
     };
 }
 
-var AnimationItemLoadHelper = {};
+const AnimationItemLoadHelper = {};
 AnimationItemLoadHelper.postedAnimations = [];
 AnimationItemLoadHelper.postRequired = true;
 AnimationItemLoadHelper.onLevelDisplayed = function() {
@@ -4665,9 +4685,9 @@ Callback.addCallback("LevelLeft", function() {
     AnimationItemLoadHelper.onLevelLeft();
 });
 
-var USE_ALTERNATIVE_ITEM_MODEL = false;
+const USE_ALTERNATIVE_ITEM_MODEL = false;
 
-function AnimationItem(x, y, z) {
+const AnimationItem = function(x, y, z) {
     this.parent = AnimationBase;
     this.parent(x, y, z);
     this.describeItemDefault = function(item) {
@@ -4769,13 +4789,13 @@ _  /    _  / / /_  ___/  __/  __ \_  __ `__ \_  __/  __  __ \  __/_  /_  __/_  /
                                                                            /____/   
 */
 
-var CustomEntityConfig = {};
+const CustomEntityConfig = {};
 CustomEntityConfig.unloaded_despawn_time_in_secs = 600;
 CustomEntityConfig.despawn_unloaded_entities =true;
 
-var ENTITY_UNLOAD_DISTANCE = 56;
+const ENTITY_UNLOAD_DISTANCE = 56;
 
-function CustomEntity(nameId) {
+const CustomEntity = function(nameId) {
     this.nameId = nameId;
     this.controllers = {};
     this.isInstance = false;
@@ -4974,7 +4994,7 @@ function CustomEntity(nameId) {
     // CustomEntityConfig = config.access("perfomance.entity");
 // });
 
-var MobRegistry = {};
+const MobRegistry = {};
 MobRegistry.customEntities = {};
 MobRegistry.loadedEntities = [];
 MobRegistry.registerEntity = function(name) {
@@ -5049,7 +5069,7 @@ Callback.addCallback("ProjectileHitEntity", function(projectile, entity) {
     if (updatable) updatable.callControllerEvent("projectileHit", projectile);
 });
 
-function AddonEntity(id, type) {
+const AddonEntity = function(id, type) {
     this.id = id;
     this.type = type;
 
@@ -5067,7 +5087,7 @@ function AddonEntity(id, type) {
     };
 };
 
-var AddonEntityRegistry = {
+const AddonEntityRegistry = {
     data: {},
     awaitCallback: null,
     
@@ -5107,7 +5127,7 @@ _  /    _  __ \_  __ \  __/_  ___/  __ \_  /__  /_  _ \_  ___/_  ___/
                                                                      
 */
 
-var EntityAIController = {};
+const EntityAIController = {};
 EntityAIController.currentPriority = 0;
 EntityAIController.loadedAI = {};
 EntityAIController.loadedData = {};
@@ -5260,7 +5280,7 @@ EntityAIController.projectileHit = function(projectile) {
     this.callAIevent("projectileHit", projectile);
 };
 
-var EntityDescriptionController = {};
+const EntityDescriptionController = {};
 EntityDescriptionController.isDynamic = false;
 EntityDescriptionController.getHitbox = function() {
     return { w: 0.99, h: 0.99 };
@@ -5329,7 +5349,7 @@ EntityDescriptionController.death = function(attacker) {
     this.provideDrop(attacker);
 };
 
-var EntityVisualController = {};
+const EntityVisualController = {};
 EntityVisualController.modelWatchers = {};
 EntityVisualController.modelWatcherStack = [];
 
@@ -5405,10 +5425,10 @@ EntityEventController.hurtBy = function(attacker, damage) {};
 EntityEventController.death = function(attacker) {};
 EntityEventController.projectileHit = function(projectile) {};
 
-var ENTITY_MIN_SPAWN_DIS = 32;
-var ENTITY_MAX_SPAWN_DIS = 63;
+const ENTITY_MIN_SPAWN_DIS = 32;
+const ENTITY_MAX_SPAWN_DIS = 63;
 
-var EntitySpawnRegistry = {};
+const EntitySpawnRegistry = {};
 EntitySpawnRegistry.spawnData = [];
 EntitySpawnRegistry.registerSpawn = function(entityType, rarity, condition, denyNaturalDespawn) {
     if (!condition)
@@ -5480,7 +5500,7 @@ Callback.addCallback("GenerateChunk", function(x, z) {
     EntitySpawnRegistry.onChunkGenerated(x, z);
 });
 
-var EntityDataRegistry = {};
+const EntityDataRegistry = {};
 EntityDataRegistry.isLevelLoaded = false;
 
 EntityDataRegistry.entityData = {};
@@ -5534,7 +5554,7 @@ _  / / /__  ___/  _ \_  /_ _  / / /_  /
                                         
 */
 
-var CONSTANT_REPLACEABLE_TILES = {
+const CONSTANT_REPLACEABLE_TILES = {
 	0: true,
 	8: true,
 	9: true,
@@ -5546,12 +5566,12 @@ var CONSTANT_REPLACEABLE_TILES = {
 	106: true
 };
 
-function canTileBeReplaced(id, data) {
+const canTileBeReplaced = function(id, data) {
     if(id == 175 && (data % 8 == 2 || data % 8 == 3)) return true;
     return CONSTANT_REPLACEABLE_TILES[id] || false;
 }
 
-var CONSTANT_VANILLA_UI_TILES = {
+const CONSTANT_VANILLA_UI_TILES = {
 	23: true, // dispenser
 	25: true, // note block
 	26: true, // bed
@@ -5594,7 +5614,7 @@ var CONSTANT_VANILLA_UI_TILES = {
 	461: true // bell
 };
 
-function doesVanillaTileHasUI(id) {
+const doesVanillaTileHasUI = function(id) {
     return !Entity.isSneaking(getPlayerEnt()) && CONSTANT_VANILLA_UI_TILES[id];
 }
 
@@ -5636,7 +5656,7 @@ Callback.addCallback("ItemUse", function(coords, item, block) {
     }
 });
 
-var ParticleAnimator = {};
+const ParticleAnimator = {};
 ParticleAnimator.addParticle = requireMethodFromNativeAPI("api.NativeAPI", "addParticle");
 ParticleAnimator.addFarParticle = requireMethodFromNativeAPI("api.NativeAPI", "addFarParticle");
 ParticleAnimator.line = function(particle, coords1, coords2, gap, vel, data) {
@@ -5857,7 +5877,7 @@ _  _, _//  __/(__  )/ /_/ / /_/ /_  /   / /__ /  __/(__  )
                                                            
 */
 
-var Resources = {};
+const Resources = {};
 Resources.addRuntimePack = function(type, name) {
 	return MCSystem.addRuntimePack(type, name);
 };
@@ -5886,7 +5906,7 @@ _  /___  _  / / /  /_/ /_  / _  / / /  __/
                 /____/                    
 */
 
-var CoreAPI = {};
+const CoreAPI = {};
 CoreAPI.getCoreAPILevel = function() {
     return CORE_ENGINE_API_LEVEL;
 };
@@ -6040,7 +6060,7 @@ CoreAPI.Native.GameDifficulty = GameDifficulty;
 
 CoreAPI.alert = CoreAPI.print = print;
 
-function ResetInGameAPIs() {
+const ResetInGameAPIs = function() {
     TileEntity.resetEngine();
     ToolAPI.resetEngine();
     EntityDataRegistry.resetEngine();
@@ -6051,6 +6071,6 @@ Callback.addCallback("LevelLeft", function() {
     ResetInGameAPIs();
 });
 
-function injectCoreAPI(scope) {
+const injectCoreAPI = function(scope) {
     for (var name in CoreAPI) scope[name] = CoreAPI[name];
 }
